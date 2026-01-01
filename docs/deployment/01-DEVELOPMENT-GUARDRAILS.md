@@ -50,12 +50,14 @@ project/
 ### 1.2 Naming Conventions
 
 **Files:**
+
 - Components: PascalCase (e.g., `AccountCard.tsx`)
 - Utilities: camelCase (e.g., `formatDate.ts`)
 - Constants: UPPER_SNAKE_CASE (e.g., `API_TIMEOUT.ts`)
 - Tests: `*.test.ts` or `*.spec.ts`
 
 **Variables & Functions:**
+
 - Variables: camelCase (e.g., `accountId`, `isLoading`)
 - Constants: UPPER_SNAKE_CASE (e.g., `MAX_RETRIES`)
 - Functions: camelCase (e.g., `createAccount()`)
@@ -63,6 +65,7 @@ project/
 - Enums: PascalCase (e.g., `ProxyType`)
 
 **React Components:**
+
 - Functional components: PascalCase (e.g., `function AccountCard()`)
 - Props interfaces: `{ComponentName}Props` (e.g., `AccountCardProps`)
 - State setters: `set{PropertyName}` (e.g., `setIsLoading`)
@@ -76,7 +79,7 @@ project/
 **MUST validate all user input:**
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Define schema
 const createAccountSchema = z.object({
@@ -124,7 +127,7 @@ function AccountCard({ account }: { account: Account }) {
 
 ```typescript
 export const account = router({
-  create: protectedProcedure  // Requires authentication
+  create: protectedProcedure // Requires authentication
     .input(createAccountSchema)
     .mutation(async ({ ctx, input }) => {
       // ctx.user is guaranteed to exist
@@ -133,7 +136,7 @@ export const account = router({
 });
 
 export const admin = router({
-  deleteUser: adminProcedure  // Requires admin role
+  deleteUser: adminProcedure // Requires admin role
     .input(z.object({ userId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       // ctx.user.role === 'admin'
@@ -155,8 +158,8 @@ await db.insert(users).values({ password: encryptedPassword });
 const decryptedPassword = await decryptData(encryptedPassword, userKey);
 
 // NEVER log sensitive data
-console.log(`User: ${user.name}`);  // OK
-console.log(`Password: ${password}`);  // NEVER
+console.log(`User: ${user.name}`); // OK
+console.log(`Password: ${password}`); // NEVER
 ```
 
 ### 2.5 CSRF Protection
@@ -174,13 +177,10 @@ console.log(`Password: ${password}`);  // NEVER
 
 ```typescript
 // Good: Using Drizzle ORM (parameterized)
-const user = await db
-  .select()
-  .from(users)
-  .where(eq(users.id, userId));  // Parameter is safe
+const user = await db.select().from(users).where(eq(users.id, userId)); // Parameter is safe
 
 // Bad: String concatenation (NEVER)
-const query = `SELECT * FROM users WHERE id = ${userId}`;  // VULNERABLE
+const query = `SELECT * FROM users WHERE id = ${userId}`; // VULNERABLE
 ```
 
 ---
@@ -192,60 +192,60 @@ const query = `SELECT * FROM users WHERE id = ${userId}`;  // VULNERABLE
 **All business logic MUST have unit tests:**
 
 ```typescript
-describe('createAccount', () => {
-  it('should create account with valid input', async () => {
+describe("createAccount", () => {
+  it("should create account with valid input", async () => {
     const account = await createAccount(1, {
-      name: 'Test Account',
-      description: 'Test',
+      name: "Test Account",
+      description: "Test",
     });
-    
+
     expect(account.id).toBeDefined();
-    expect(account.name).toBe('Test Account');
+    expect(account.name).toBe("Test Account");
   });
-  
-  it('should throw error with invalid input', async () => {
-    await expect(
-      createAccount(1, { name: '' })
-    ).rejects.toThrow('Name is required');
+
+  it("should throw error with invalid input", async () => {
+    await expect(createAccount(1, { name: "" })).rejects.toThrow(
+      "Name is required"
+    );
   });
 });
 ```
 
 **Test Coverage Requirements:**
 
-| Component | Coverage |
-|-----------|----------|
-| Business logic | 80%+ |
-| Utilities | 90%+ |
-| API procedures | 70%+ |
-| UI components | 50%+ |
+| Component      | Coverage |
+| -------------- | -------- |
+| Business logic | 80%+     |
+| Utilities      | 90%+     |
+| API procedures | 70%+     |
+| UI components  | 50%+     |
 
 ### 3.2 Integration Testing
 
 **Critical user flows MUST have integration tests:**
 
 ```typescript
-describe('Account Switching Flow', () => {
-  it('should switch accounts without data loss', async () => {
+describe("Account Switching Flow", () => {
+  it("should switch accounts without data loss", async () => {
     // Create two accounts
-    const account1 = await createAccount(userId, { name: 'Account 1' });
-    const account2 = await createAccount(userId, { name: 'Account 2' });
-    
+    const account1 = await createAccount(userId, { name: "Account 1" });
+    const account2 = await createAccount(userId, { name: "Account 2" });
+
     // Switch to account 1
     await switchAccount(account1.id);
-    
+
     // Set data in account 1
-    await setData('key1', 'value1');
-    
+    await setData("key1", "value1");
+
     // Switch to account 2
     await switchAccount(account2.id);
-    
+
     // Switch back to account 1
     await switchAccount(account1.id);
-    
+
     // Verify data is restored
-    const value = await getData('key1');
-    expect(value).toBe('value1');
+    const value = await getData("key1");
+    expect(value).toBe("value1");
   });
 });
 ```
@@ -274,14 +274,14 @@ pnpm test --watch
 
 ### 4.1 Performance Targets
 
-| Metric | Target | Tool |
-|--------|--------|------|
-| Initial Page Load | < 3s | Lighthouse |
-| API Response Time | < 200ms (p95) | Custom monitoring |
-| Database Query Time | < 50ms (p95) | Query profiling |
-| Bundle Size | < 500KB (gzipped) | Webpack Bundle Analyzer |
-| Lighthouse Score | > 90 | Lighthouse |
-| Time to Interactive | < 2s | Lighthouse |
+| Metric              | Target            | Tool                    |
+| ------------------- | ----------------- | ----------------------- |
+| Initial Page Load   | < 3s              | Lighthouse              |
+| API Response Time   | < 200ms (p95)     | Custom monitoring       |
+| Database Query Time | < 50ms (p95)      | Query profiling         |
+| Bundle Size         | < 500KB (gzipped) | Webpack Bundle Analyzer |
+| Lighthouse Score    | > 90              | Lighthouse              |
+| Time to Interactive | < 2s              | Lighthouse              |
 
 ### 4.2 Performance Monitoring
 
@@ -290,7 +290,7 @@ pnpm test --watch
 ```typescript
 // Measure API response time
 const startTime = performance.now();
-const response = await fetch('/api/trpc/account.list');
+const response = await fetch("/api/trpc/account.list");
 const duration = performance.now() - startTime;
 
 console.log(`API call took ${duration}ms`);
@@ -298,7 +298,7 @@ console.log(`API call took ${duration}ms`);
 if (duration > 200) {
   // Log performance warning
   await logPerformanceWarning({
-    endpoint: 'account.list',
+    endpoint: "account.list",
     duration,
     threshold: 200,
   });
@@ -394,7 +394,7 @@ pnpm format --check
 
 ```typescript
 // Good: Structured logging
-logger.info('Account created', {
+logger.info("Account created", {
   userId: user.id,
   accountId: account.id,
   timestamp: new Date().toISOString(),
@@ -406,13 +406,13 @@ console.log(`Account ${account.id} created for user ${user.id}`);
 
 **Log Levels:**
 
-| Level | Use Case | Example |
-|-------|----------|---------|
-| DEBUG | Detailed debugging info | Variable values, function entry/exit |
-| INFO | General information | User actions, system events |
-| WARN | Warning conditions | Deprecated API usage, performance issues |
-| ERROR | Error conditions | Failed operations, exceptions |
-| CRITICAL | Critical failures | System down, data corruption |
+| Level    | Use Case                | Example                                  |
+| -------- | ----------------------- | ---------------------------------------- |
+| DEBUG    | Detailed debugging info | Variable values, function entry/exit     |
+| INFO     | General information     | User actions, system events              |
+| WARN     | Warning conditions      | Deprecated API usage, performance issues |
+| ERROR    | Error conditions        | Failed operations, exceptions            |
+| CRITICAL | Critical failures       | System down, data corruption             |
 
 ### 6.2 Error Logging
 
@@ -422,17 +422,17 @@ console.log(`Account ${account.id} created for user ${user.id}`);
 try {
   await createAccount(userId, input);
 } catch (error) {
-  logger.error('Failed to create account', {
+  logger.error("Failed to create account", {
     userId,
     input,
     error: error.message,
     stack: error.stack,
     timestamp: new Date().toISOString(),
   });
-  
+
   throw new TRPCError({
-    code: 'INTERNAL_SERVER_ERROR',
-    message: 'Failed to create account',
+    code: "INTERNAL_SERVER_ERROR",
+    message: "Failed to create account",
   });
 }
 ```
@@ -447,23 +447,23 @@ const startTime = performance.now();
 try {
   const result = await expensiveOperation();
   const duration = performance.now() - startTime;
-  
-  logger.info('Expensive operation completed', {
-    operation: 'expensiveOperation',
+
+  logger.info("Expensive operation completed", {
+    operation: "expensiveOperation",
     duration,
     result: result.id,
   });
-  
+
   return result;
 } catch (error) {
   const duration = performance.now() - startTime;
-  
-  logger.error('Expensive operation failed', {
-    operation: 'expensiveOperation',
+
+  logger.error("Expensive operation failed", {
+    operation: "expensiveOperation",
     duration,
     error: error.message,
   });
-  
+
   throw error;
 }
 ```
@@ -486,26 +486,31 @@ try {
 ### 7.2 Deployment Steps
 
 1. **Create Release Branch:**
+
    ```bash
    git checkout -b release/v1.0.0
    ```
 
 2. **Update Version:**
+
    ```bash
    npm version minor
    ```
 
 3. **Build Application:**
+
    ```bash
    pnpm build
    ```
 
 4. **Run Tests:**
+
    ```bash
    pnpm test
    ```
 
 5. **Deploy to Staging:**
+
    ```bash
    git push origin release/v1.0.0
    # Trigger CI/CD pipeline
@@ -563,6 +568,7 @@ Closes #123
 ```
 
 **Format:**
+
 ```
 <type>: <subject>
 
@@ -612,7 +618,7 @@ counter++;
 ```typescript
 /**
  * Create a new account for the user.
- * 
+ *
  * @param userId - The ID of the user creating the account
  * @param input - Account creation input
  * @param input.name - Account name (1-100 characters)
@@ -620,7 +626,7 @@ counter++;
  * @returns The created account
  * @throws {ValidationError} If input is invalid
  * @throws {DatabaseError} If database operation fails
- * 
+ *
  * @example
  * const account = await createAccount(1, {
  *   name: 'Work Account',

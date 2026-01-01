@@ -21,11 +21,13 @@ This document defines all tRPC procedures for the Incog browser application, inc
 **Authentication:** Public (returns null if not authenticated)
 
 **Request:**
+
 ```typescript
 // No input required
 ```
 
 **Response:**
+
 ```typescript
 interface User {
   id: number;
@@ -41,13 +43,14 @@ interface User {
 ```
 
 **Example:**
+
 ```typescript
 const { data: user } = trpc.auth.me.useQuery();
 
 if (user) {
   console.log(`Logged in as ${user.name}`);
 } else {
-  console.log('Not authenticated');
+  console.log("Not authenticated");
 }
 ```
 
@@ -58,11 +61,13 @@ if (user) {
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 // No input required
 ```
 
 **Response:**
+
 ```typescript
 interface LogoutResponse {
   success: boolean;
@@ -70,11 +75,12 @@ interface LogoutResponse {
 ```
 
 **Example:**
+
 ```typescript
 const logout = trpc.auth.logout.useMutation({
   onSuccess: () => {
     // Redirect to login
-    window.location.href = '/login';
+    window.location.href = "/login";
   },
 });
 
@@ -92,10 +98,11 @@ logout.mutate();
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface ListAccountsInput {
-  sortBy?: 'name' | 'createdAt' | 'lastAccessedAt';
-  order?: 'asc' | 'desc';
+  sortBy?: "name" | "createdAt" | "lastAccessedAt";
+  order?: "asc" | "desc";
   filter?: {
     protected?: boolean;
   };
@@ -103,6 +110,7 @@ interface ListAccountsInput {
 ```
 
 **Response:**
+
 ```typescript
 interface Account {
   id: string;
@@ -115,14 +123,16 @@ interface Account {
   createdAt: Date;
   updatedAt: Date;
   lastAccessedAt: Date | null;
-}[]
+}
+[];
 ```
 
 **Example:**
+
 ```typescript
 const { data: accounts } = trpc.account.list.useQuery({
-  sortBy: 'lastAccessedAt',
-  order: 'desc',
+  sortBy: "lastAccessedAt",
+  order: "desc",
 });
 
 accounts?.forEach(account => {
@@ -137,15 +147,17 @@ accounts?.forEach(account => {
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface CreateAccountInput {
-  name: string;                    // 1-100 chars
-  description?: string;            // max 500 chars
-  proxyConfigId?: string;          // optional
+  name: string; // 1-100 chars
+  description?: string; // max 500 chars
+  proxyConfigId?: string; // optional
 }
 ```
 
 **Response:**
+
 ```typescript
 interface CreateAccountResponse {
   id: string;
@@ -155,16 +167,17 @@ interface CreateAccountResponse {
 ```
 
 **Example:**
+
 ```typescript
 const createAccount = trpc.account.create.useMutation({
-  onSuccess: (data) => {
+  onSuccess: data => {
     console.log(`Account created: ${data.id}`);
   },
 });
 
 createAccount.mutate({
-  name: 'Work Account',
-  description: 'For work-related browsing',
+  name: "Work Account",
+  description: "For work-related browsing",
 });
 ```
 
@@ -175,6 +188,7 @@ createAccount.mutate({
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface UpdateAccountInput {
   accountId: string;
@@ -186,6 +200,7 @@ interface UpdateAccountInput {
 ```
 
 **Response:**
+
 ```typescript
 interface Account {
   id: string;
@@ -202,11 +217,12 @@ interface Account {
 ```
 
 **Example:**
+
 ```typescript
 const updateAccount = trpc.account.update.useMutation();
 
 updateAccount.mutate({
-  accountId: 'account-123',
+  accountId: "account-123",
   isProtected: true,
 });
 ```
@@ -218,6 +234,7 @@ updateAccount.mutate({
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface SwitchAccountInput {
   accountId: string;
@@ -225,6 +242,7 @@ interface SwitchAccountInput {
 ```
 
 **Response:**
+
 ```typescript
 interface SwitchAccountResponse {
   success: boolean;
@@ -234,24 +252,26 @@ interface SwitchAccountResponse {
 ```
 
 **Error Codes:**
+
 - `NOT_FOUND`: Account not found or user doesn't have access
 - `FORBIDDEN`: Account is protected and biometric auth failed
 
 **Example:**
+
 ```typescript
 const switchAccount = trpc.account.switch.useMutation({
-  onSuccess: (data) => {
+  onSuccess: data => {
     console.log(`Switched to account ${data.accountId}`);
     // Reload UI with new account data
   },
-  onError: (error) => {
-    if (error.data?.code === 'FORBIDDEN') {
-      console.log('Biometric authentication required');
+  onError: error => {
+    if (error.data?.code === "FORBIDDEN") {
+      console.log("Biometric authentication required");
     }
   },
 });
 
-switchAccount.mutate({ accountId: 'account-123' });
+switchAccount.mutate({ accountId: "account-123" });
 ```
 
 ### 2.5 Delete Account
@@ -261,6 +281,7 @@ switchAccount.mutate({ accountId: 'account-123' });
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface DeleteAccountInput {
   accountId: string;
@@ -269,6 +290,7 @@ interface DeleteAccountInput {
 ```
 
 **Response:**
+
 ```typescript
 interface DeleteAccountResponse {
   success: boolean;
@@ -276,15 +298,16 @@ interface DeleteAccountResponse {
 ```
 
 **Example:**
+
 ```typescript
 const deleteAccount = trpc.account.delete.useMutation({
   onSuccess: () => {
-    console.log('Account deleted');
+    console.log("Account deleted");
   },
 });
 
 deleteAccount.mutate({
-  accountId: 'account-123',
+  accountId: "account-123",
   confirmDeletion: true,
 });
 ```
@@ -300,10 +323,11 @@ deleteAccount.mutate({
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface ListProxyConfigsInput {
-  sortBy?: 'name' | 'type' | 'createdAt';
-  order?: 'asc' | 'desc';
+  sortBy?: "name" | "type" | "createdAt";
+  order?: "asc" | "desc";
   filter?: {
     type?: ProxyType;
     isActive?: boolean;
@@ -312,6 +336,7 @@ interface ListProxyConfigsInput {
 ```
 
 **Response:**
+
 ```typescript
 interface ProxyConfig {
   id: string;
@@ -329,10 +354,12 @@ interface ProxyConfig {
     latency: number;
     error?: string;
   };
-}[]
+}
+[];
 ```
 
 **Example:**
+
 ```typescript
 const { data: proxies } = trpc.proxy.list.useQuery({
   filter: { isActive: true },
@@ -346,16 +373,17 @@ const { data: proxies } = trpc.proxy.list.useQuery({
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface CreateProxyConfigInput {
-  name: string;                    // 1-100 chars
+  name: string; // 1-100 chars
   type: ProxyType;
-  host: string;                    // IP or hostname
-  port: number;                    // 1-65535
+  host: string; // IP or hostname
+  port: number; // 1-65535
   username?: string;
   password?: string;
   v2rayConfig?: {
-    protocol: 'vmess' | 'vless' | 'trojan' | 'shadowsocks';
+    protocol: "vmess" | "vless" | "trojan" | "shadowsocks";
     server: string;
     port: number;
     uuid?: string;
@@ -369,6 +397,7 @@ interface CreateProxyConfigInput {
 ```
 
 **Response:**
+
 ```typescript
 interface CreateProxyConfigResponse {
   id: string;
@@ -378,21 +407,23 @@ interface CreateProxyConfigResponse {
 ```
 
 **Validation Errors:**
+
 - Invalid IP/hostname
 - Port out of range
 - Missing required fields
 
 **Example:**
+
 ```typescript
 const createProxy = trpc.proxy.create.useMutation();
 
 createProxy.mutate({
-  name: 'Work Proxy',
-  type: 'SOCKS5',
-  host: '192.168.1.100',
+  name: "Work Proxy",
+  type: "SOCKS5",
+  host: "192.168.1.100",
   port: 1080,
-  username: 'user',
-  password: 'pass',
+  username: "user",
+  password: "pass",
 });
 ```
 
@@ -403,6 +434,7 @@ createProxy.mutate({
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface UpdateProxyConfigInput {
   proxyConfigId: string;
@@ -416,8 +448,11 @@ interface UpdateProxyConfigInput {
 ```
 
 **Response:**
+
 ```typescript
-interface ProxyConfig { /* ... */ }
+interface ProxyConfig {
+  /* ... */
+}
 ```
 
 ### 3.4 Test Proxy
@@ -427,6 +462,7 @@ interface ProxyConfig { /* ... */ }
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface TestProxyInput {
   proxyConfigId: string;
@@ -434,6 +470,7 @@ interface TestProxyInput {
 ```
 
 **Response:**
+
 ```typescript
 interface TestProxyResponse {
   success: boolean;
@@ -443,9 +480,10 @@ interface TestProxyResponse {
 ```
 
 **Example:**
+
 ```typescript
 const testProxy = trpc.proxy.test.useMutation({
-  onSuccess: (result) => {
+  onSuccess: result => {
     if (result.success) {
       console.log(`Proxy working! Latency: ${result.latency}ms`);
     } else {
@@ -454,7 +492,7 @@ const testProxy = trpc.proxy.test.useMutation({
   },
 });
 
-testProxy.mutate({ proxyConfigId: 'proxy-123' });
+testProxy.mutate({ proxyConfigId: "proxy-123" });
 ```
 
 ### 3.5 Delete Proxy Config
@@ -464,6 +502,7 @@ testProxy.mutate({ proxyConfigId: 'proxy-123' });
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface DeleteProxyConfigInput {
   proxyConfigId: string;
@@ -471,6 +510,7 @@ interface DeleteProxyConfigInput {
 ```
 
 **Response:**
+
 ```typescript
 interface DeleteProxyConfigResponse {
   success: boolean;
@@ -488,6 +528,7 @@ interface DeleteProxyConfigResponse {
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface ListTabsInput {
   accountId: string;
@@ -495,6 +536,7 @@ interface ListTabsInput {
 ```
 
 **Response:**
+
 ```typescript
 interface BrowserTab {
   id: string;
@@ -507,7 +549,8 @@ interface BrowserTab {
   lastAccessedAt: Date;
   favicon?: string;
   thumbnail?: string;
-}[]
+}
+[];
 ```
 
 ### 4.2 Create Tab
@@ -517,6 +560,7 @@ interface BrowserTab {
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface CreateTabInput {
   accountId: string;
@@ -526,8 +570,11 @@ interface CreateTabInput {
 ```
 
 **Response:**
+
 ```typescript
-interface BrowserTab { /* ... */ }
+interface BrowserTab {
+  /* ... */
+}
 ```
 
 ### 4.3 Update Tab
@@ -537,6 +584,7 @@ interface BrowserTab { /* ... */ }
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface UpdateTabInput {
   tabId: string;
@@ -550,8 +598,11 @@ interface UpdateTabInput {
 ```
 
 **Response:**
+
 ```typescript
-interface BrowserTab { /* ... */ }
+interface BrowserTab {
+  /* ... */
+}
 ```
 
 ### 4.4 Close Tab
@@ -561,6 +612,7 @@ interface BrowserTab { /* ... */ }
 **Authentication:** Protected
 
 **Request:**
+
 ```typescript
 interface CloseTabInput {
   tabId: string;
@@ -568,6 +620,7 @@ interface CloseTabInput {
 ```
 
 **Response:**
+
 ```typescript
 interface CloseTabResponse {
   success: boolean;
@@ -597,37 +650,37 @@ interface TRPCError {
 
 ### 5.2 Error Codes
 
-| Code | HTTP Status | Description |
-|------|-------------|---|
-| PARSE_ERROR | 400 | Invalid input |
-| BAD_REQUEST | 400 | Bad request |
-| NOT_FOUND | 404 | Resource not found |
-| INTERNAL_SERVER_ERROR | 500 | Server error |
-| UNAUTHORIZED | 401 | Not authenticated |
-| FORBIDDEN | 403 | Not authorized |
-| CONFLICT | 409 | Resource conflict |
-| PRECONDITION_FAILED | 412 | Precondition failed |
-| PAYLOAD_TOO_LARGE | 413 | Payload too large |
-| UNPROCESSABLE_CONTENT | 422 | Validation error |
-| TOO_MANY_REQUESTS | 429 | Rate limited |
+| Code                  | HTTP Status | Description         |
+| --------------------- | ----------- | ------------------- |
+| PARSE_ERROR           | 400         | Invalid input       |
+| BAD_REQUEST           | 400         | Bad request         |
+| NOT_FOUND             | 404         | Resource not found  |
+| INTERNAL_SERVER_ERROR | 500         | Server error        |
+| UNAUTHORIZED          | 401         | Not authenticated   |
+| FORBIDDEN             | 403         | Not authorized      |
+| CONFLICT              | 409         | Resource conflict   |
+| PRECONDITION_FAILED   | 412         | Precondition failed |
+| PAYLOAD_TOO_LARGE     | 413         | Payload too large   |
+| UNPROCESSABLE_CONTENT | 422         | Validation error    |
+| TOO_MANY_REQUESTS     | 429         | Rate limited        |
 
 ### 5.3 Error Handling Example
 
 ```typescript
 const createAccount = trpc.account.create.useMutation({
-  onError: (error) => {
+  onError: error => {
     switch (error.data?.code) {
-      case 'UNAUTHORIZED':
-        console.log('Please log in');
+      case "UNAUTHORIZED":
+        console.log("Please log in");
         break;
-      case 'FORBIDDEN':
-        console.log('You do not have permission');
+      case "FORBIDDEN":
+        console.log("You do not have permission");
         break;
-      case 'UNPROCESSABLE_CONTENT':
-        console.log('Invalid input:', error.message);
+      case "UNPROCESSABLE_CONTENT":
+        console.log("Invalid input:", error.message);
         break;
       default:
-        console.log('Error:', error.message);
+        console.log("Error:", error.message);
     }
   },
 });
@@ -649,22 +702,22 @@ X-RateLimit-Reset: 1640995200
 
 ### 6.2 Rate Limit Policies
 
-| Endpoint | Limit | Window |
-|----------|-------|--------|
-| `auth.me` | 1000 | 1 hour |
-| `account.list` | 100 | 1 minute |
-| `account.create` | 10 | 1 hour |
-| `account.switch` | 100 | 1 minute |
-| `proxy.test` | 20 | 1 hour |
-| `tab.create` | 100 | 1 minute |
+| Endpoint         | Limit | Window   |
+| ---------------- | ----- | -------- |
+| `auth.me`        | 1000  | 1 hour   |
+| `account.list`   | 100   | 1 minute |
+| `account.create` | 10    | 1 hour   |
+| `account.switch` | 100   | 1 minute |
+| `proxy.test`     | 20    | 1 hour   |
+| `tab.create`     | 100   | 1 minute |
 
 ### 6.3 Rate Limit Handling
 
 ```typescript
 const createAccount = trpc.account.create.useMutation({
-  onError: (error) => {
-    if (error.data?.code === 'TOO_MANY_REQUESTS') {
-      console.log('Rate limited. Please try again later.');
+  onError: error => {
+    if (error.data?.code === "TOO_MANY_REQUESTS") {
+      console.log("Rate limited. Please try again later.");
     }
   },
 });
@@ -680,8 +733,8 @@ For list endpoints that support pagination:
 
 ```typescript
 interface PaginationInput {
-  page?: number;        // 1-indexed
-  pageSize?: number;    // default 20, max 100
+  page?: number; // 1-indexed
+  pageSize?: number; // default 20, max 100
 }
 
 interface PaginatedResponse<T> {
@@ -750,10 +803,10 @@ Future support for WebSocket subscriptions:
 ```typescript
 // Example (not yet implemented)
 const subscription = trpc.account.onUpdate.subscribe(
-  { accountId: 'account-123' },
+  { accountId: "account-123" },
   {
-    onData: (account) => {
-      console.log('Account updated:', account);
+    onData: account => {
+      console.log("Account updated:", account);
     },
   }
 );

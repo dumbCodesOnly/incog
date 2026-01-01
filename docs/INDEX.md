@@ -16,6 +16,7 @@ This documentation package provides a comprehensive architectural blueprint for 
 Comprehensive system design covering the overall application structure, technology stack, component relationships, and deployment architecture. This document establishes the foundational design patterns and technology decisions that guide all subsequent development.
 
 **Key Topics:**
+
 - Technology stack and framework selection
 - System architecture diagrams
 - Component interaction patterns
@@ -27,6 +28,7 @@ Comprehensive system design covering the overall application structure, technolo
 Detailed specifications for all core features and requirements, organized by functional domain. Each feature includes acceptance criteria, technical requirements, and integration points with other system components.
 
 **Key Topics:**
+
 - Multi-account management system
 - Advanced WebView isolation
 - Anti-detection and fingerprinting protection
@@ -39,6 +41,7 @@ Detailed specifications for all core features and requirements, organized by fun
 In-depth security model documentation covering encryption strategies, authentication flows, anti-fingerprinting techniques, threat mitigation, and compliance requirements. This document serves as the security guardrail for all development activities.
 
 **Key Topics:**
+
 - Data encryption and key management
 - Authentication and authorization flows
 - Anti-fingerprinting techniques
@@ -51,6 +54,7 @@ In-depth security model documentation covering encryption strategies, authentica
 Detailed architecture for implementing complete session isolation between accounts, including storage separation, context switching, and state management strategies.
 
 **Key Topics:**
+
 - Account model and data structures
 - Session isolation mechanisms
 - Storage separation strategies
@@ -63,6 +67,7 @@ Detailed architecture for implementing complete session isolation between accoun
 Comprehensive guide for implementing proxy support including HTTP, HTTPS, SOCKS5, and V2Ray protocols, with configuration management and testing strategies.
 
 **Key Topics:**
+
 - Supported proxy protocols
 - Per-account proxy configuration
 - V2Ray core integration
@@ -75,6 +80,7 @@ Comprehensive guide for implementing proxy support including HTTP, HTTPS, SOCKS5
 Complete database schema design with entity relationships, encryption requirements, and migration strategies. Includes data models, indexes, and query optimization patterns.
 
 **Key Topics:**
+
 - Entity relationship diagrams
 - Table definitions and constraints
 - Encryption requirements per field
@@ -87,6 +93,7 @@ Complete database schema design with entity relationships, encryption requiremen
 Comprehensive tRPC API contracts documenting all procedures with request/response schemas, authentication requirements, error handling, and usage examples.
 
 **Key Topics:**
+
 - Authentication procedures
 - Account management procedures
 - Proxy configuration procedures
@@ -99,6 +106,7 @@ Comprehensive tRPC API contracts documenting all procedures with request/respons
 Frontend architecture covering component structure, state management, mobile-responsive design patterns, and performance optimization strategies.
 
 **Key Topics:**
+
 - Component hierarchy and organization
 - State management patterns
 - Mobile-first responsive design
@@ -111,6 +119,7 @@ Frontend architecture covering component structure, state management, mobile-res
 Coding standards, security best practices, testing requirements, and deployment checklist to ensure consistent, secure, and maintainable development.
 
 **Key Topics:**
+
 - Code organization and naming conventions
 - Security best practices
 - Testing requirements and coverage
@@ -123,6 +132,7 @@ Coding standards, security best practices, testing requirements, and deployment 
 Complete guide for packaging the web application as a progressive web app with eventual Android APK distribution through Trusted Web Activity (TWA), Capacitor, or similar technologies.
 
 **Key Topics:**
+
 - PWA implementation requirements
 - Trusted Web Activity (TWA) setup
 - Capacitor integration (alternative approach)
@@ -135,6 +145,7 @@ Complete guide for packaging the web application as a progressive web app with e
 Production-ready GitHub Actions workflow templates for continuous integration, testing, building, and packaging the application into APK format.
 
 **Key Topics:**
+
 - CI/CD pipeline configuration
 - Automated testing workflows
 - Build and packaging workflows
@@ -149,26 +160,31 @@ Production-ready GitHub Actions workflow templates for continuous integration, t
 ### By Role
 
 **Architects & Tech Leads:**
+
 - Start with [Architecture Overview](./architecture/01-SYSTEM-ARCHITECTURE.md)
 - Review [Security Architecture](./security/01-SECURITY-MODEL.md)
 - Study [Multi-Account Isolation](./security/02-MULTI-ACCOUNT-ISOLATION.md)
 
 **Backend Developers:**
+
 - Review [Database Schema](./database/01-SCHEMA-DESIGN.md)
 - Study [API Contracts](./api/01-TRPC-API-CONTRACTS.md)
 - Reference [Development Guardrails](./deployment/01-DEVELOPMENT-GUARDRAILS.md)
 
 **Frontend Developers:**
+
 - Review [Frontend Architecture](./frontend/01-ARCHITECTURE-GUIDE.md)
 - Study [API Contracts](./api/01-TRPC-API-CONTRACTS.md)
 - Reference [Development Guardrails](./deployment/01-DEVELOPMENT-GUARDRAILS.md)
 
 **DevOps & Release Engineers:**
+
 - Review [PWA-to-APK Guide](./deployment/02-PWA-TO-APK-GUIDE.md)
 - Study [GitHub Actions Workflows](./workflows/README.md)
 - Reference [Development Guardrails](./deployment/01-DEVELOPMENT-GUARDRAILS.md)
 
 **Security & Compliance:**
+
 - Review [Security Architecture](./security/01-SECURITY-MODEL.md)
 - Study [Multi-Account Isolation](./security/02-MULTI-ACCOUNT-ISOLATION.md)
 - Reference [Development Guardrails](./deployment/01-DEVELOPMENT-GUARDRAILS.md)
@@ -176,21 +192,25 @@ Production-ready GitHub Actions workflow templates for continuous integration, t
 ### By Phase
 
 **Pre-Development Planning:**
+
 1. [Architecture Overview](./architecture/01-SYSTEM-ARCHITECTURE.md)
 2. [Feature Specifications](./architecture/02-FEATURE-SPECIFICATIONS.md)
 3. [Security Architecture](./security/01-SECURITY-MODEL.md)
 
 **Development Setup:**
+
 1. [Database Schema](./database/01-SCHEMA-DESIGN.md)
 2. [API Contracts](./api/01-TRPC-API-CONTRACTS.md)
 3. [Frontend Architecture](./frontend/01-ARCHITECTURE-GUIDE.md)
 
 **Development Execution:**
+
 1. [Development Guardrails](./deployment/01-DEVELOPMENT-GUARDRAILS.md)
 2. [Multi-Account Isolation](./security/02-MULTI-ACCOUNT-ISOLATION.md)
 3. [Proxy Integration](./architecture/03-PROXY-INTEGRATION.md)
 
 **Deployment & Release:**
+
 1. [PWA-to-APK Guide](./deployment/02-PWA-TO-APK-GUIDE.md)
 2. [GitHub Actions Workflows](./workflows/README.md)
 
@@ -242,9 +262,9 @@ Code examples are written in TypeScript, React, and SQL unless otherwise specifi
 
 ## Revision History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0.0 | Dec 2025 | Manus AI | Initial comprehensive documentation package |
+| Version | Date     | Author   | Changes                                     |
+| ------- | -------- | -------- | ------------------------------------------- |
+| 1.0.0   | Dec 2025 | Manus AI | Initial comprehensive documentation package |
 
 ---
 

@@ -108,7 +108,10 @@ A Progressive Web App must meet the following requirements:
 <!-- client/index.html -->
 <link rel="manifest" href="/manifest.json" />
 <meta name="theme-color" content="#000000" />
-<meta name="description" content="Privacy-focused browser with multi-account management" />
+<meta
+  name="description"
+  content="Privacy-focused browser with multi-account management"
+/>
 ```
 
 ### 1.3 Service Worker
@@ -119,22 +122,22 @@ A Progressive Web App must meet the following requirements:
 declare const self: ServiceWorkerGlobalScope;
 
 // Cache version
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = "v1.0.0";
 const CACHE_NAME = `incog-${CACHE_VERSION}`;
 
 // Files to cache on install
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192x192.png',
-  '/icon-512x512.png',
+  "/",
+  "/index.html",
+  "/manifest.json",
+  "/icon-192x192.png",
+  "/icon-512x512.png",
 ];
 
 // Install event
-self.addEventListener('install', (event: ExtendableEvent) => {
+self.addEventListener("install", (event: ExtendableEvent) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+    caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
@@ -142,13 +145,13 @@ self.addEventListener('install', (event: ExtendableEvent) => {
 });
 
 // Activate event
-self.addEventListener('activate', (event: ExtendableEvent) => {
+self.addEventListener("activate", (event: ExtendableEvent) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .filter(name => name !== CACHE_NAME)
+          .map(name => caches.delete(name))
       );
     })
   );
@@ -156,23 +159,23 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 });
 
 // Fetch event
-self.addEventListener('fetch', (event: FetchEvent) => {
+self.addEventListener("fetch", (event: FetchEvent) => {
   const { request } = event;
-  
+
   // Skip non-GET requests
-  if (request.method !== 'GET') {
+  if (request.method !== "GET") {
     return;
   }
-  
+
   // Network first for API calls
-  if (request.url.includes('/api/')) {
+  if (request.url.includes("/api/")) {
     event.respondWith(
       fetch(request)
-        .then((response) => {
+        .then(response => {
           // Cache successful responses
           if (response.ok) {
             const cache = caches.open(CACHE_NAME);
-            cache.then((c) => c.put(request, response.clone()));
+            cache.then(c => c.put(request, response.clone()));
           }
           return response;
         })
@@ -183,10 +186,10 @@ self.addEventListener('fetch', (event: FetchEvent) => {
     );
     return;
   }
-  
+
   // Cache first for static assets
   event.respondWith(
-    caches.match(request).then((response) => {
+    caches.match(request).then(response => {
       return response || fetch(request);
     })
   );
@@ -229,34 +232,34 @@ interface BeforeInstallPromptEvent extends Event {
 function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
-  
+
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setShowPrompt(true);
     };
-    
+
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
-  
+
   const handleInstall = async () => {
     if (!deferredPrompt) return;
-    
+
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     if (outcome === 'accepted') {
       console.log('App installed');
     }
-    
+
     setDeferredPrompt(null);
     setShowPrompt(false);
   };
-  
+
   if (!showPrompt) return null;
-  
+
   return (
     <div className="p-4 bg-blue-50 border border-blue-200 rounded">
       <p className="mb-2">Install Incog for quick access</p>
@@ -280,12 +283,14 @@ function InstallPrompt() {
 Trusted Web Activity (TWA) is a technology that allows a web app to be packaged as an Android app and distributed through the Google Play Store. The app runs in a full-screen Chrome Custom Tab.
 
 **Advantages:**
+
 - Reuse existing web codebase
 - Distribute through Play Store
 - Access to native Android APIs
 - Automatic updates through web app
 
 **Requirements:**
+
 - HTTPS domain with valid SSL certificate
 - Digital Asset Links configuration
 - Android keystore for signing
@@ -631,7 +636,9 @@ webpack-bundle-analyzer dist/assets/index.*.js
 
 ```typescript
 // Reduce animations on low-end devices
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+).matches;
 
 // Optimize touch interactions
 // - Larger touch targets (44x44px minimum)
@@ -654,8 +661,8 @@ const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)
 
 ```typescript
 // Firebase Crashlytics integration
-import { initializeApp } from 'firebase/app';
-import { getAnalytics, logEvent } from 'firebase/analytics';
+import { initializeApp } from "firebase/app";
+import { getAnalytics, logEvent } from "firebase/analytics";
 
 const firebaseApp = initializeApp({
   apiKey: process.env.FIREBASE_API_KEY,
@@ -665,13 +672,13 @@ const firebaseApp = initializeApp({
 const analytics = getAnalytics(firebaseApp);
 
 // Log events
-logEvent(analytics, 'app_installed', {
-  version: '1.0.0',
+logEvent(analytics, "app_installed", {
+  version: "1.0.0",
 });
 
 // Catch errors
-window.addEventListener('error', (event) => {
-  logEvent(analytics, 'app_error', {
+window.addEventListener("error", event => {
+  logEvent(analytics, "app_error", {
     message: event.message,
     stack: event.error?.stack,
   });
@@ -683,12 +690,12 @@ window.addEventListener('error', (event) => {
 **Track user behavior:**
 
 ```typescript
-logEvent(analytics, 'account_created', {
+logEvent(analytics, "account_created", {
   accountId: account.id,
   timestamp: new Date().toISOString(),
 });
 
-logEvent(analytics, 'proxy_configured', {
+logEvent(analytics, "proxy_configured", {
   proxyType: proxy.type,
   timestamp: new Date().toISOString(),
 });
@@ -721,9 +728,7 @@ buildTypes {
 ```typescript
 // Pin SSL certificates for critical domains
 const certPin = {
-  'incog-browser.com': [
-    'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-  ],
+  "incog-browser.com": ["sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="],
 };
 ```
 
@@ -733,14 +738,14 @@ const certPin = {
 
 ```typescript
 // Use Capacitor Preferences for secure storage
-import { Preferences } from '@capacitor/preferences';
+import { Preferences } from "@capacitor/preferences";
 
 await Preferences.set({
-  key: 'auth_token',
+  key: "auth_token",
   value: token,
 });
 
-const { value } = await Preferences.get({ key: 'auth_token' });
+const { value } = await Preferences.get({ key: "auth_token" });
 ```
 
 ---

@@ -27,6 +27,7 @@ Each account operates in a completely isolated execution environment with no sha
 ### 1.2 No Cross-Contamination
 
 Switching between accounts MUST guarantee that:
+
 - Previous account's cookies are not accessible to new account
 - Previous account's cache is not accessible to new account
 - Previous account's local storage is not accessible to new account
@@ -36,6 +37,7 @@ Switching between accounts MUST guarantee that:
 ### 1.3 Transparent Isolation
 
 Isolation mechanisms MUST be transparent to the application:
+
 - Application code does not need to explicitly manage isolation
 - Isolation is enforced at the framework level
 - Isolation failures MUST be detected and prevented
@@ -62,21 +64,21 @@ interface ClientStorageContext {
 // Create isolated IndexedDB for account
 async function createAccountDatabase(accountId: string): Promise<IDBDatabase> {
   const dbName = `incog-account-${accountId}`;
-  
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(dbName, 1);
-    
+
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve(request.result);
-    
-    request.onupgradeneeded = (event) => {
+
+    request.onupgradeneeded = event => {
       const db = (event.target as IDBOpenDBRequest).result;
-      
+
       // Create object stores
-      db.createObjectStore('cookies', { keyPath: 'name' });
-      db.createObjectStore('cache', { keyPath: 'url' });
-      db.createObjectStore('localStorage', { keyPath: 'key' });
-      db.createObjectStore('sessionStorage', { keyPath: 'key' });
+      db.createObjectStore("cookies", { keyPath: "name" });
+      db.createObjectStore("cache", { keyPath: "url" });
+      db.createObjectStore("localStorage", { keyPath: "key" });
+      db.createObjectStore("sessionStorage", { keyPath: "key" });
     };
   });
 }
@@ -84,9 +86,9 @@ async function createAccountDatabase(accountId: string): Promise<IDBDatabase> {
 // Store cookie in account-specific database
 async function setCookie(accountId: string, cookie: Cookie): Promise<void> {
   const db = await getAccountDatabase(accountId);
-  const transaction = db.transaction(['cookies'], 'readwrite');
-  const store = transaction.objectStore('cookies');
-  
+  const transaction = db.transaction(["cookies"], "readwrite");
+  const store = transaction.objectStore("cookies");
+
   return new Promise((resolve, reject) => {
     const request = store.put(cookie);
     request.onerror = () => reject(request.error);
@@ -97,9 +99,9 @@ async function setCookie(accountId: string, cookie: Cookie): Promise<void> {
 // Retrieve cookies only for current account
 async function getCookies(accountId: string): Promise<Cookie[]> {
   const db = await getAccountDatabase(accountId);
-  const transaction = db.transaction(['cookies'], 'readonly');
-  const store = transaction.objectStore('cookies');
-  
+  const transaction = db.transaction(["cookies"], "readonly");
+  const store = transaction.objectStore("cookies");
+
   return new Promise((resolve, reject) => {
     const request = store.getAll();
     request.onerror = () => reject(request.error);
@@ -114,42 +116,42 @@ async function getCookies(accountId: string): Promise<Cookie[]> {
 class StorageContextManager {
   private currentAccountId: string | null = null;
   private accountDatabases: Map<string, IDBDatabase> = new Map();
-  
+
   async switchContext(accountId: string): Promise<void> {
     // Save current context
     if (this.currentAccountId) {
       await this.saveContext(this.currentAccountId);
     }
-    
+
     // Clear memory
     this.clearMemory();
-    
+
     // Load new context
     this.currentAccountId = accountId;
     await this.loadContext(accountId);
   }
-  
+
   private async saveContext(accountId: string): Promise<void> {
     // Save current cookies to IndexedDB
-    const cookies = document.cookie.split(';').map(c => c.trim());
+    const cookies = document.cookie.split(";").map(c => c.trim());
     for (const cookie of cookies) {
       await setCookie(accountId, parseCookie(cookie));
     }
-    
+
     // Save current storage to IndexedDB
     const localStorage = Object.entries(window.localStorage);
     for (const [key, value] of localStorage) {
       await setLocalStorage(accountId, key, value);
     }
   }
-  
+
   private async loadContext(accountId: string): Promise<void> {
     // Load cookies from IndexedDB
     const cookies = await getCookies(accountId);
     for (const cookie of cookies) {
       document.cookie = serializeCookie(cookie);
     }
-    
+
     // Load storage from IndexedDB
     const storage = await getLocalStorage(accountId);
     window.localStorage.clear();
@@ -157,23 +159,23 @@ class StorageContextManager {
       window.localStorage.setItem(key, value);
     }
   }
-  
+
   private clearMemory(): void {
     // Clear cookies
-    document.cookie.split(';').forEach(c => {
-      const eqPos = c.indexOf('=');
+    document.cookie.split(";").forEach(c => {
+      const eqPos = c.indexOf("=");
       const name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim();
       document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
     });
-    
+
     // Clear storage
     window.localStorage.clear();
     window.sessionStorage.clear();
-    
+
     // Clear IndexedDB
     const dbs = await indexedDB.databases();
     for (const db of dbs) {
-      if (db.name?.startsWith('incog-account-')) {
+      if (db.name?.startsWith("incog-account-")) {
         indexedDB.deleteDatabase(db.name);
       }
     }
@@ -205,12 +207,12 @@ async function createAccount(
 ): Promise<Account> {
   const accountId = generateUUID();
   const accountKey = await deriveAccountKey(userId, accountId);
-  
+
   const encryptedName = await encryptData(name, accountKey);
   const encryptedDescription = description
     ? await encryptData(description, accountKey)
     : null;
-  
+
   return db.insert(accounts).values({
     id: accountId,
     userId,
@@ -228,13 +230,13 @@ async function getAccount(userId: string, accountId: string): Promise<Account> {
     .from(accounts)
     .where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)))
     .limit(1);
-  
+
   if (!account.length) {
-    throw new Error('Account not found');
+    throw new Error("Account not found");
   }
-  
+
   const accountKey = await deriveAccountKey(userId, accountId);
-  
+
   const decrypted = {
     ...account[0],
     name: await decryptData(account[0].name, accountKey),
@@ -242,7 +244,7 @@ async function getAccount(userId: string, accountId: string): Promise<Account> {
       ? await decryptData(account[0].description, accountKey)
       : null,
   };
-  
+
   return decrypted;
 }
 ```
@@ -299,7 +301,7 @@ interface Cookie {
   expires?: Date;
   httpOnly: boolean;
   secure: boolean;
-  sameSite: 'Strict' | 'Lax' | 'None';
+  sameSite: "Strict" | "Lax" | "None";
 }
 ```
 
@@ -313,21 +315,21 @@ async function createSession(
 ): Promise<SessionContext> {
   const sessionId = generateUUID();
   const now = new Date();
-  
+
   const session: SessionContext = {
     sessionId,
     userId,
     accountId,
     createdAt: now,
-    expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000),  // 24 hours
+    expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000), // 24 hours
     lastActivityAt: now,
     ipAddress: getClientIp(request),
-    userAgent: request.headers.get('user-agent') || '',
+    userAgent: request.headers.get("user-agent") || "",
     cookies: new Map(),
     cache: new Map(),
     storage: new Map(),
   };
-  
+
   // Store session in database
   await db.insert(sessions).values({
     id: sessionId,
@@ -339,7 +341,7 @@ async function createSession(
     ipAddress: session.ipAddress,
     userAgent: session.userAgent,
   });
-  
+
   return session;
 }
 ```
@@ -347,31 +349,33 @@ async function createSession(
 **Session Validation:**
 
 ```typescript
-async function validateSession(sessionId: string): Promise<SessionContext | null> {
+async function validateSession(
+  sessionId: string
+): Promise<SessionContext | null> {
   const session = await db
     .select()
     .from(sessions)
     .where(eq(sessions.id, sessionId))
     .limit(1);
-  
+
   if (!session.length) {
     return null;
   }
-  
+
   const sessionData = session[0];
-  
+
   // Check expiration
   if (sessionData.expiresAt < new Date()) {
     await db.delete(sessions).where(eq(sessions.id, sessionId));
     return null;
   }
-  
+
   // Update last activity
   await db
     .update(sessions)
     .set({ lastActivityAt: new Date() })
     .where(eq(sessions.id, sessionId));
-  
+
   return {
     sessionId: sessionData.id,
     userId: sessionData.userId,
@@ -400,52 +404,52 @@ async function cleanupSession(sessionId: string): Promise<void> {
     .from(sessions)
     .where(eq(sessions.id, sessionId))
     .limit(1);
-  
+
   if (!session.length) return;
-  
+
   const { accountId, userId } = session[0];
-  
+
   // Clear cookies
   const cookies = await db
     .select()
     .from(sessionCookies)
     .where(eq(sessionCookies.sessionId, sessionId));
-  
+
   for (const cookie of cookies) {
     await db.delete(sessionCookies).where(eq(sessionCookies.id, cookie.id));
   }
-  
+
   // Clear cache
   const cacheEntries = await db
     .select()
     .from(sessionCache)
     .where(eq(sessionCache.sessionId, sessionId));
-  
+
   for (const entry of cacheEntries) {
     await db.delete(sessionCache).where(eq(sessionCache.id, entry.id));
   }
-  
+
   // Clear storage
   const storageEntries = await db
     .select()
     .from(sessionStorage)
     .where(eq(sessionStorage.sessionId, sessionId));
-  
+
   for (const entry of storageEntries) {
     await db.delete(sessionStorage).where(eq(sessionStorage.id, entry.id));
   }
-  
+
   // Delete session
   await db.delete(sessions).where(eq(sessions.id, sessionId));
-  
+
   // Log cleanup
   await logAuditEvent({
     userId,
-    action: 'session.cleanup',
-    resource: 'session',
+    action: "session.cleanup",
+    resource: "session",
     resourceId: sessionId,
     accountId,
-    status: 'success',
+    status: "success",
   });
 }
 ```
@@ -489,60 +493,51 @@ export const account = router({
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
       const { accountId } = input;
-      
+
       // Validate user has access to account
       const account = await db
         .select()
         .from(accounts)
-        .where(
-          and(
-            eq(accounts.id, accountId),
-            eq(accounts.userId, user.id)
-          )
-        )
+        .where(and(eq(accounts.id, accountId), eq(accounts.userId, user.id)))
         .limit(1);
-      
+
       if (!account.length) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Account not found',
+          code: "NOT_FOUND",
+          message: "Account not found",
         });
       }
-      
+
       // Save current session context
       const currentSession = await validateSession(ctx.sessionId);
       if (currentSession) {
         await saveSessionContext(currentSession);
       }
-      
+
       // Clear current session
       if (currentSession) {
         await cleanupSession(currentSession.sessionId);
       }
-      
+
       // Create new session for target account
-      const newSession = await createSession(
-        user.id,
-        accountId,
-        ctx.req
-      );
-      
+      const newSession = await createSession(user.id, accountId, ctx.req);
+
       // Load target account context
       const targetContext = await loadAccountContext(accountId);
-      
+
       // Issue new session cookie
       const sessionCookie = createSessionCookie(newSession.sessionId);
-      ctx.res.setHeader('Set-Cookie', sessionCookie);
-      
+      ctx.res.setHeader("Set-Cookie", sessionCookie);
+
       // Log account switch
       await logAuditEvent({
         userId: user.id,
-        action: 'account.switch',
-        resource: 'account',
+        action: "account.switch",
+        resource: "account",
         resourceId: accountId,
-        status: 'success',
+        status: "success",
       });
-      
+
       return {
         success: true,
         accountId,
@@ -564,11 +559,11 @@ async function loadAccountContext(accountId: string): Promise<AccountContext> {
     .from(accounts)
     .where(eq(accounts.id, accountId))
     .limit(1);
-  
+
   if (!account.length) {
-    throw new Error('Account not found');
+    throw new Error("Account not found");
   }
-  
+
   // Get proxy configuration
   let proxyConfig = null;
   if (account[0].proxyConfigId) {
@@ -577,21 +572,21 @@ async function loadAccountContext(accountId: string): Promise<AccountContext> {
       .from(proxyConfigs)
       .where(eq(proxyConfigs.id, account[0].proxyConfigId))
       .limit(1);
-    
+
     if (proxy.length) {
       proxyConfig = proxy[0];
     }
   }
-  
+
   // Get browser tabs
   const tabs = await db
     .select()
     .from(browserTabs)
     .where(eq(browserTabs.accountId, accountId));
-  
+
   // Get active tab
   const activeTab = tabs.find(t => t.isActive);
-  
+
   return {
     accountId,
     account: account[0],
@@ -623,7 +618,7 @@ async function saveSessionContext(session: SessionContext): Promise<void> {
       sameSite: cookie.sameSite,
     });
   }
-  
+
   // Save cache entries
   for (const [url, entry] of session.cache) {
     await db.insert(sessionCache).values({
@@ -635,7 +630,7 @@ async function saveSessionContext(session: SessionContext): Promise<void> {
       expiresAt: entry.expiresAt,
     });
   }
-  
+
   // Save storage entries
   for (const [key, entry] of session.storage) {
     await db.insert(sessionStorage).values({
@@ -682,22 +677,17 @@ async function getAccountProxyConfig(userId: string, accountId: string) {
   const account = await db
     .select()
     .from(accounts)
-    .where(
-      and(
-        eq(accounts.id, accountId),
-        eq(accounts.userId, userId)
-      )
-    )
+    .where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)))
     .limit(1);
-  
+
   if (!account.length) {
-    throw new Error('Account not found');
+    throw new Error("Account not found");
   }
-  
+
   if (!account[0].proxyConfigId) {
     return null;
   }
-  
+
   return db
     .select()
     .from(proxyConfigs)
@@ -727,27 +717,19 @@ async function updateTab(
   const account = await db
     .select()
     .from(accounts)
-    .where(
-      and(
-        eq(accounts.id, accountId),
-        eq(accounts.userId, userId)
-      )
-    )
+    .where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)))
     .limit(1);
-  
+
   if (!account.length) {
-    throw new Error('Account not found');
+    throw new Error("Account not found");
   }
-  
+
   // Update tab
   return db
     .update(browserTabs)
     .set(updates)
     .where(
-      and(
-        eq(browserTabs.id, tabId),
-        eq(browserTabs.accountId, accountId)
-      )
+      and(eq(browserTabs.id, tabId), eq(browserTabs.accountId, accountId))
     );
 }
 
@@ -757,21 +739,16 @@ async function deleteAccount(userId: string, accountId: string) {
   const account = await db
     .select()
     .from(accounts)
-    .where(
-      and(
-        eq(accounts.id, accountId),
-        eq(accounts.userId, userId)
-      )
-    )
+    .where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)))
     .limit(1);
-  
+
   if (!account.length) {
-    throw new Error('Account not found');
+    throw new Error("Account not found");
   }
-  
+
   // Delete all tabs
   await db.delete(browserTabs).where(eq(browserTabs.accountId, accountId));
-  
+
   // Delete account
   await db.delete(accounts).where(eq(accounts.id, accountId));
 }
@@ -786,55 +763,55 @@ async function deleteAccount(userId: string, accountId: string) {
 **Test Cross-Account Data Leakage:**
 
 ```typescript
-describe('Multi-Account Isolation', () => {
-  it('should not leak cookies between accounts', async () => {
+describe("Multi-Account Isolation", () => {
+  it("should not leak cookies between accounts", async () => {
     // Create two accounts
-    const account1 = await createAccount(userId, 'Account 1');
-    const account2 = await createAccount(userId, 'Account 2');
-    
+    const account1 = await createAccount(userId, "Account 1");
+    const account2 = await createAccount(userId, "Account 2");
+
     // Switch to account 1
     await switchAccount(account1.id);
-    
+
     // Set cookie in account 1
-    document.cookie = 'test=value1; path=/';
-    
+    document.cookie = "test=value1; path=/";
+
     // Switch to account 2
     await switchAccount(account2.id);
-    
+
     // Verify cookie is not present in account 2
-    const cookies = document.cookie.split(';').map(c => c.trim());
-    expect(cookies).not.toContain('test=value1');
-    
+    const cookies = document.cookie.split(";").map(c => c.trim());
+    expect(cookies).not.toContain("test=value1");
+
     // Switch back to account 1
     await switchAccount(account1.id);
-    
+
     // Verify cookie is restored in account 1
-    const cookies1 = document.cookie.split(';').map(c => c.trim());
-    expect(cookies1).toContain('test=value1');
+    const cookies1 = document.cookie.split(";").map(c => c.trim());
+    expect(cookies1).toContain("test=value1");
   });
-  
-  it('should not leak storage between accounts', async () => {
+
+  it("should not leak storage between accounts", async () => {
     // Create two accounts
-    const account1 = await createAccount(userId, 'Account 1');
-    const account2 = await createAccount(userId, 'Account 2');
-    
+    const account1 = await createAccount(userId, "Account 1");
+    const account2 = await createAccount(userId, "Account 2");
+
     // Switch to account 1
     await switchAccount(account1.id);
-    
+
     // Set storage in account 1
-    window.localStorage.setItem('key', 'value1');
-    
+    window.localStorage.setItem("key", "value1");
+
     // Switch to account 2
     await switchAccount(account2.id);
-    
+
     // Verify storage is not present in account 2
-    expect(window.localStorage.getItem('key')).toBeNull();
-    
+    expect(window.localStorage.getItem("key")).toBeNull();
+
     // Switch back to account 1
     await switchAccount(account1.id);
-    
+
     // Verify storage is restored in account 1
-    expect(window.localStorage.getItem('key')).toBe('value1');
+    expect(window.localStorage.getItem("key")).toBe("value1");
   });
 });
 ```
@@ -853,17 +830,17 @@ interface IsolationMonitor {
 
 async function monitorIsolation(): Promise<void> {
   const monitor = new IsolationMonitor();
-  
+
   // Check for violations
   const cookieLeakage = await monitor.checkCookieLeakage();
   const storageLeakage = await monitor.checkStorageLeakage();
   const sessionLeakage = await monitor.checkSessionLeakage();
   const proxyLeakage = await monitor.checkProxyLeakage();
-  
+
   // Log violations
   if (cookieLeakage || storageLeakage || sessionLeakage || proxyLeakage) {
     await logSecurityEvent({
-      type: 'ISOLATION_VIOLATION',
+      type: "ISOLATION_VIOLATION",
       cookieLeakage,
       storageLeakage,
       sessionLeakage,
@@ -881,11 +858,13 @@ async function monitorIsolation(): Promise<void> {
 ### 7.1 Context Switching Performance
 
 **Target Performance:**
+
 - Account switch MUST complete in < 500ms
 - Context loading MUST complete in < 200ms
 - Context saving MUST complete in < 100ms
 
 **Optimization Strategies:**
+
 - Use lazy loading for account data
 - Cache frequently accessed account data
 - Use database indexes for account queries
@@ -894,6 +873,7 @@ async function monitorIsolation(): Promise<void> {
 ### 7.2 Storage Performance
 
 **Optimization Strategies:**
+
 - Use IndexedDB for client-side storage (faster than localStorage)
 - Implement storage quotas per account
 - Clean up expired cache entries regularly

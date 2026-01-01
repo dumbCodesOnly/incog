@@ -16,26 +16,26 @@ The architecture prioritizes security, isolation, and anti-detection capabilitie
 
 ## 1. Technology Stack
 
-| Layer | Component | Technology | Version | Rationale |
-|-------|-----------|-----------|---------|-----------|
-| **Frontend** | UI Framework | React | 19.x | Modern component model, excellent ecosystem, strong TypeScript support |
-| **Frontend** | Styling | Tailwind CSS | 4.x | Utility-first CSS, excellent mobile support, minimal bundle size |
-| **Frontend** | UI Components | shadcn/ui | Latest | Accessible, composable components built on Radix UI |
-| **Frontend** | State Management | TanStack Query | 5.x | Powerful server state management, built-in caching and synchronization |
-| **Frontend** | Routing | Wouter | 3.x | Lightweight, zero-dependency routing for SPA |
-| **Frontend** | HTTP Client | tRPC | 11.x | End-to-end type-safe RPC framework |
-| **Backend** | Runtime | Node.js | 22.x | JavaScript runtime, excellent ecosystem, strong async support |
-| **Backend** | Server Framework | Express | 4.x | Lightweight, well-established, excellent middleware ecosystem |
-| **Backend** | RPC Framework | tRPC | 11.x | Type-safe RPC procedures with automatic validation |
-| **Backend** | Database ORM | Drizzle | 0.44.x | Type-safe SQL builder, excellent TypeScript support |
-| **Database** | Engine | MySQL/TiDB | 8.0+ | Reliable, scalable, excellent transaction support |
-| **Database** | Encryption | AES-256-GCM | - | Industry-standard encryption for sensitive data |
-| **Authentication** | Method | Manus OAuth | - | Platform-provided OAuth integration |
-| **Storage** | File Storage | AWS S3 | - | Scalable, reliable object storage for user data |
-| **Deployment** | Container | Docker | Latest | Containerization for consistent deployment |
-| **Packaging** | PWA | Web Standards | - | Progressive Web App capabilities |
-| **Packaging** | APK | Trusted Web Activity | - | Android app packaging from web app |
-| **CI/CD** | Workflow | GitHub Actions | - | Integrated CI/CD with GitHub repository |
+| Layer              | Component        | Technology           | Version | Rationale                                                              |
+| ------------------ | ---------------- | -------------------- | ------- | ---------------------------------------------------------------------- |
+| **Frontend**       | UI Framework     | React                | 19.x    | Modern component model, excellent ecosystem, strong TypeScript support |
+| **Frontend**       | Styling          | Tailwind CSS         | 4.x     | Utility-first CSS, excellent mobile support, minimal bundle size       |
+| **Frontend**       | UI Components    | shadcn/ui            | Latest  | Accessible, composable components built on Radix UI                    |
+| **Frontend**       | State Management | TanStack Query       | 5.x     | Powerful server state management, built-in caching and synchronization |
+| **Frontend**       | Routing          | Wouter               | 3.x     | Lightweight, zero-dependency routing for SPA                           |
+| **Frontend**       | HTTP Client      | tRPC                 | 11.x    | End-to-end type-safe RPC framework                                     |
+| **Backend**        | Runtime          | Node.js              | 22.x    | JavaScript runtime, excellent ecosystem, strong async support          |
+| **Backend**        | Server Framework | Express              | 4.x     | Lightweight, well-established, excellent middleware ecosystem          |
+| **Backend**        | RPC Framework    | tRPC                 | 11.x    | Type-safe RPC procedures with automatic validation                     |
+| **Backend**        | Database ORM     | Drizzle              | 0.44.x  | Type-safe SQL builder, excellent TypeScript support                    |
+| **Database**       | Engine           | MySQL/TiDB           | 8.0+    | Reliable, scalable, excellent transaction support                      |
+| **Database**       | Encryption       | AES-256-GCM          | -       | Industry-standard encryption for sensitive data                        |
+| **Authentication** | Method           | Manus OAuth          | -       | Platform-provided OAuth integration                                    |
+| **Storage**        | File Storage     | AWS S3               | -       | Scalable, reliable object storage for user data                        |
+| **Deployment**     | Container        | Docker               | Latest  | Containerization for consistent deployment                             |
+| **Packaging**      | PWA              | Web Standards        | -       | Progressive Web App capabilities                                       |
+| **Packaging**      | APK              | Trusted Web Activity | -       | Android app packaging from web app                                     |
+| **CI/CD**          | Workflow         | GitHub Actions       | -       | Integrated CI/CD with GitHub repository                                |
 
 ---
 
@@ -149,6 +149,7 @@ The architecture prioritizes security, isolation, and anti-detection capabilitie
 The frontend is a React-based single-page application (SPA) built with modern web standards and progressive web app (PWA) capabilities.
 
 **Key Responsibilities:**
+
 - Render user interface for account management, browsing, and settings
 - Manage client-side state for UI interactions and temporary data
 - Handle authentication flows and session management
@@ -157,6 +158,7 @@ The frontend is a React-based single-page application (SPA) built with modern we
 - Provide responsive design for desktop and mobile platforms
 
 **Technology Stack:**
+
 - React 19 for component model and hooks
 - Tailwind CSS 4 for styling and responsive design
 - TanStack Query for server state management
@@ -168,6 +170,7 @@ The frontend is a React-based single-page application (SPA) built with modern we
 The backend is a Node.js/Express application providing tRPC procedures for all client operations.
 
 **Key Responsibilities:**
+
 - Authenticate users through OAuth and session management
 - Manage account creation, modification, and deletion
 - Implement session isolation and context switching
@@ -177,6 +180,7 @@ The backend is a Node.js/Express application providing tRPC procedures for all c
 - Log audit trails for compliance
 
 **Technology Stack:**
+
 - Express 4 for HTTP server
 - tRPC 11 for type-safe RPC procedures
 - Drizzle ORM for database access
@@ -188,6 +192,7 @@ The backend is a Node.js/Express application providing tRPC procedures for all c
 The database stores all persistent application data with encryption for sensitive fields.
 
 **Key Responsibilities:**
+
 - Store user accounts and authentication credentials
 - Maintain proxy configurations and credentials
 - Track browser tabs and session state
@@ -195,6 +200,7 @@ The database stores all persistent application data with encryption for sensitiv
 - Manage encryption keys and metadata
 
 **Technology Stack:**
+
 - MySQL 8.0+ or TiDB for primary database
 - Drizzle ORM for type-safe queries
 - AES-256-GCM encryption for sensitive fields
@@ -205,6 +211,7 @@ The database stores all persistent application data with encryption for sensitiv
 Handles user authentication through OAuth and session management.
 
 **Key Responsibilities:**
+
 - Integrate with Manus OAuth for user authentication
 - Issue and validate JWT tokens
 - Manage session cookies with secure flags
@@ -212,6 +219,7 @@ Handles user authentication through OAuth and session management.
 - Enforce biometric authentication for protected accounts
 
 **Technology Stack:**
+
 - Manus OAuth for identity provider
 - JWT (jose library) for token management
 - Secure HTTP-only cookies for session storage
@@ -221,6 +229,7 @@ Handles user authentication through OAuth and session management.
 Manages account creation, modification, deletion, and isolation.
 
 **Key Responsibilities:**
+
 - Create new accounts with unique identifiers
 - Manage account metadata and settings
 - Implement account protection (biometric auth)
@@ -228,6 +237,7 @@ Manages account creation, modification, deletion, and isolation.
 - Manage per-account data directories
 
 **Technology Stack:**
+
 - Drizzle ORM for data persistence
 - UUID for unique account identifiers
 - Encryption manager for sensitive data
@@ -237,6 +247,7 @@ Manages account creation, modification, deletion, and isolation.
 Implements complete session isolation between accounts.
 
 **Key Responsibilities:**
+
 - Create isolated execution contexts per account
 - Manage separate storage for each account
 - Handle context switching with proper cleanup
@@ -244,6 +255,7 @@ Implements complete session isolation between accounts.
 - Manage WebView lifecycle per account
 
 **Technology Stack:**
+
 - IndexedDB for client-side per-account storage
 - Session storage for temporary data
 - Encrypted database fields for server-side isolation
@@ -253,6 +265,7 @@ Implements complete session isolation between accounts.
 Implements fingerprinting protection and behavior simulation.
 
 **Key Responsibilities:**
+
 - Rotate user agents across realistic browser profiles
 - Inject JavaScript to spoof canvas and WebGL fingerprints
 - Simulate human-like behavior (mouse movements, typing delays)
@@ -260,6 +273,7 @@ Implements fingerprinting protection and behavior simulation.
 - Manage browser characteristics spoofing
 
 **Technology Stack:**
+
 - JavaScript injection for client-side protection
 - User agent database with realistic profiles
 - Rate limiting middleware
@@ -269,6 +283,7 @@ Implements fingerprinting protection and behavior simulation.
 Manages proxy configuration and connection routing.
 
 **Key Responsibilities:**
+
 - Support HTTP, HTTPS, SOCKS5, and V2Ray protocols
 - Manage per-account proxy configurations
 - Validate proxy connectivity
@@ -276,6 +291,7 @@ Manages proxy configuration and connection routing.
 - Implement connection pooling and lifecycle management
 
 **Technology Stack:**
+
 - OkHttp-compatible proxy handling
 - V2Ray core integration
 - Connection pooling with timeout management
@@ -285,6 +301,7 @@ Manages proxy configuration and connection routing.
 Manages file storage and retrieval operations.
 
 **Key Responsibilities:**
+
 - Upload files to AWS S3
 - Generate presigned URLs for secure access
 - Manage file metadata and access control
@@ -292,6 +309,7 @@ Manages file storage and retrieval operations.
 - Support per-account storage isolation
 
 **Technology Stack:**
+
 - AWS S3 SDK for cloud storage
 - Presigned URLs for secure access
 - Metadata database for tracking
@@ -455,14 +473,14 @@ The security architecture is built on multiple layers of protection:
 
 ## 8. Performance Targets
 
-| Metric | Target | Rationale |
-|--------|--------|-----------|
-| Initial Page Load | < 3 seconds | Acceptable for web applications |
-| API Response Time | < 200ms (p95) | Responsive user experience |
-| Database Query Time | < 50ms (p95) | Efficient data access |
-| Bundle Size | < 500KB (gzipped) | Fast downloads on mobile |
-| Lighthouse Score | > 90 | High performance and accessibility |
-| Time to Interactive | < 2 seconds | Quick user engagement |
+| Metric              | Target            | Rationale                          |
+| ------------------- | ----------------- | ---------------------------------- |
+| Initial Page Load   | < 3 seconds       | Acceptable for web applications    |
+| API Response Time   | < 200ms (p95)     | Responsive user experience         |
+| Database Query Time | < 50ms (p95)      | Efficient data access              |
+| Bundle Size         | < 500KB (gzipped) | Fast downloads on mobile           |
+| Lighthouse Score    | > 90              | High performance and accessibility |
+| Time to Interactive | < 2 seconds       | Quick user engagement              |
 
 ---
 

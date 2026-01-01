@@ -156,15 +156,15 @@ function AccountManager() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Server state
   const { data: accounts } = trpc.account.list.useQuery();
-  
+
   // Derived state
   const filteredAccounts = accounts?.filter(a =>
     a.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   return (
     // JSX
   );
@@ -188,7 +188,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: user, isLoading } = trpc.auth.me.useQuery();
   const logout = trpc.auth.logout.useMutation();
-  
+
   return (
     <AuthContext.Provider value={{ user: user || null, loading: isLoading, logout }}>
       {children}
@@ -214,6 +214,7 @@ export function useAuth() {
 **Purpose:** Landing page with account overview and quick actions.
 
 **Components:**
+
 - Account summary cards
 - Recent activity
 - Quick action buttons
@@ -224,18 +225,20 @@ export function useAuth() {
 **Purpose:** Create, edit, delete, and switch between accounts.
 
 **Components:**
+
 - Account list with search/filter
 - Account creation form
 - Account detail view
 - Account deletion confirmation
 
 **State:**
+
 ```typescript
 interface AccountManagerState {
   accounts: Account[];
   selectedAccountId: string | null;
   isFormOpen: boolean;
-  formMode: 'create' | 'edit';
+  formMode: "create" | "edit";
   searchQuery: string;
 }
 ```
@@ -245,12 +248,14 @@ interface AccountManagerState {
 **Purpose:** Manage proxy configurations and assignments.
 
 **Components:**
+
 - Proxy list with filtering
 - Proxy creation/edit form
 - Proxy testing interface
 - Account-proxy assignment
 
 **State:**
+
 ```typescript
 interface ProxyManagerState {
   proxies: ProxyConfig[];
@@ -266,6 +271,7 @@ interface ProxyManagerState {
 **Purpose:** Main browsing interface with tabs and URL bar.
 
 **Components:**
+
 - Tab bar with tab management
 - URL bar with navigation
 - WebView container
@@ -273,6 +279,7 @@ interface ProxyManagerState {
 - Incognito mode indicator
 
 **State:**
+
 ```typescript
 interface BrowserViewState {
   currentAccountId: string;
@@ -292,13 +299,13 @@ interface BrowserViewState {
 
 The application uses Tailwind CSS breakpoints:
 
-| Breakpoint | Width | Device |
-|-----------|-------|--------|
-| `sm` | 640px | Small phone |
-| `md` | 768px | Tablet |
-| `lg` | 1024px | Desktop |
-| `xl` | 1280px | Large desktop |
-| `2xl` | 1536px | Extra large |
+| Breakpoint | Width  | Device        |
+| ---------- | ------ | ------------- |
+| `sm`       | 640px  | Small phone   |
+| `md`       | 768px  | Tablet        |
+| `lg`       | 1024px | Desktop       |
+| `xl`       | 1280px | Large desktop |
+| `2xl`      | 1536px | Extra large   |
 
 ### 4.2 Mobile-First Approach
 
@@ -379,7 +386,7 @@ function AccountList() {
   const handleSwitch = useCallback((accountId: string) => {
     switchAccount(accountId);
   }, []);
-  
+
   return (
     <div>
       {accounts?.map(account => (
@@ -421,12 +428,12 @@ function AccountCard({ account }: { account: Account }) {
 function AccountList() {
   const utils = trpc.useUtils();
   const { data: accounts } = trpc.account.list.useQuery();
-  
+
   const handleMouseEnter = (accountId: string) => {
     // Prefetch account details
     utils.account.get.prefetch({ accountId });
   };
-  
+
   return (
     <div>
       {accounts?.map(account => (
@@ -472,13 +479,13 @@ function AccountSwitcher() {
 ```typescript
 function AccountCard({ account }: { account: Account }) {
   const [isFocused, setIsFocused] = useState(false);
-  
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       switchAccount(account.id);
     }
   };
-  
+
   return (
     <button
       className={`p-4 rounded-lg border ${isFocused ? 'ring-2 ring-primary' : ''}`}
@@ -505,11 +512,11 @@ function AccountCard({ account }: { account: Account }) {
 */
 
 .text-primary {
-  @apply text-blue-600;  /* 7.5:1 on white */
+  @apply text-blue-600; /* 7.5:1 on white */
 }
 
 .text-secondary {
-  @apply text-gray-600;  /* 7:1 on white */
+  @apply text-gray-600; /* 7:1 on white */
 }
 ```
 
@@ -535,15 +542,15 @@ class ErrorBoundary extends React.Component<
     super(props);
     this.state = { hasError: false };
   }
-  
+
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
-  
+
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught:', error, errorInfo);
   }
-  
+
   render() {
     if (this.state.hasError) {
       return (
@@ -553,7 +560,7 @@ class ErrorBoundary extends React.Component<
         </div>
       );
     }
-    
+
     return this.props.children;
   }
 }
@@ -566,7 +573,7 @@ class ErrorBoundary extends React.Component<
 ```typescript
 function AccountForm() {
   const [error, setError] = useState<string | null>(null);
-  
+
   const createAccount = trpc.account.create.useMutation({
     onError: (error) => {
       setError(error.message);
@@ -576,7 +583,7 @@ function AccountForm() {
       // Show success message
     },
   });
-  
+
   return (
     <form>
       {error && (
@@ -614,9 +621,9 @@ function AccountListSkeleton() {
 
 function AccountList() {
   const { data: accounts, isLoading } = trpc.account.list.useQuery();
-  
+
   if (isLoading) return <AccountListSkeleton />;
-  
+
   return (
     <div>
       {accounts?.map(account => (
@@ -635,7 +642,7 @@ function AccountList() {
 function ProxyTester({ proxyId }: { proxyId: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  
+
   const testProxy = trpc.proxy.test.useMutation({
     onMutate: () => {
       setIsLoading(true);
@@ -646,7 +653,7 @@ function ProxyTester({ proxyId }: { proxyId: string }) {
       setIsLoading(false);
     },
   });
-  
+
   return (
     <div>
       <button
@@ -694,7 +701,7 @@ function ProxyTester({ proxyId }: { proxyId: string }) {
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.6%;
   }
-  
+
   .dark {
     --background: 0 0% 3.6%;
     --foreground: 0 0% 98.2%;
@@ -710,7 +717,7 @@ function ProxyTester({ proxyId }: { proxyId: string }) {
 ```typescript
 function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  
+
   useEffect(() => {
     const html = document.documentElement;
     if (theme === 'dark') {
@@ -719,11 +726,11 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
       html.classList.remove('dark');
     }
   }, [theme]);
-  
+
   const toggleTheme = () => {
     setTheme(t => t === 'light' ? 'dark' : 'light');
   };
-  
+
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
@@ -751,20 +758,20 @@ describe('AccountCard', () => {
       name: 'Test Account',
       description: 'Test description',
     };
-    
+
     render(<AccountCard account={account} />);
-    
+
     expect(screen.getByText('Test Account')).toBeInTheDocument();
   });
-  
+
   it('calls onSwitch when clicked', () => {
     const onSwitch = vi.fn();
     const account = { id: '1', name: 'Test Account' };
-    
+
     render(<AccountCard account={account} onSwitch={onSwitch} />);
-    
+
     screen.getByRole('button').click();
-    
+
     expect(onSwitch).toHaveBeenCalledWith('1');
   });
 });

@@ -2,9 +2,9 @@ import type { TrpcContext } from "./context";
 
 export type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
-export function createAuthContext(
-  user: AuthenticatedUser | null
-): { ctx: TrpcContext } {
+export function createAuthContext(user: AuthenticatedUser | null): {
+  ctx: TrpcContext;
+} {
   const ctx: TrpcContext = {
     user,
     req: {
@@ -13,7 +13,7 @@ export function createAuthContext(
     } as TrpcContext["req"],
     res: {
       clearCookie: () => {},
-    } as TrpcContext["res"],
+    } as unknown as TrpcContext["res"],
   };
 
   return { ctx };

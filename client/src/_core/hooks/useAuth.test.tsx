@@ -5,6 +5,13 @@ import { useAuth } from "./useAuth";
 import { trpc } from "@/lib/trpc";
 import React, { PropsWithChildren } from "react";
 
+// Mock getLoginUrl to avoid environment variable dependency
+vi.mock("@/const", () => ({
+  getLoginUrl: () => "http://dummy-login-url",
+  COOKIE_NAME: "auth_token",
+  ONE_YEAR_MS: 31536000000,
+}));
+
 // Mock the trpc module with a factory to ensure hooks are mock functions
 vi.mock("@/lib/trpc", () => ({
   trpc: {

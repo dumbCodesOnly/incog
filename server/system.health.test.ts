@@ -16,8 +16,8 @@ describe("system.health", () => {
     const { ctx } = createPublicContext();
     const caller = appRouter.createCaller(ctx);
 
-    await expect(
-      caller.system.health({ timestamp: -1 })
-    ).rejects.toThrowError("timestamp cannot be negative");
+    await expect(caller.system.health({ timestamp: -1 })).rejects.toThrowError(
+      "timestamp cannot be negative"
+    );
   });
 });

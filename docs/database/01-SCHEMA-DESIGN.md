@@ -60,7 +60,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
   last_signed_in TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted_at TIMESTAMP NULL,
-  
+
   INDEX idx_open_id (open_id),
   INDEX idx_role (role),
   INDEX idx_created_at (created_at),
@@ -69,6 +69,7 @@ CREATE TABLE users (
 ```
 
 **Fields:**
+
 - `id`: Auto-incrementing primary key
 - `open_id`: OAuth identifier from Manus OAuth (unique)
 - `name`: User display name
@@ -97,7 +98,7 @@ CREATE TABLE accounts (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
   last_accessed_at TIMESTAMP,
   deleted_at TIMESTAMP NULL,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (proxy_config_id) REFERENCES proxy_configs(id),
   INDEX idx_user_id (user_id),
@@ -108,6 +109,7 @@ CREATE TABLE accounts (
 ```
 
 **Fields:**
+
 - `id`: UUID primary key
 - `user_id`: Foreign key to users table
 - `name`: Account name (encrypted)
@@ -135,7 +137,7 @@ CREATE TABLE sessions (
   ip_address VARCHAR(45),
   user_agent TEXT,
   deleted_at TIMESTAMP NULL,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (account_id) REFERENCES accounts(id),
   INDEX idx_user_id (user_id),
@@ -146,6 +148,7 @@ CREATE TABLE sessions (
 ```
 
 **Fields:**
+
 - `id`: UUID primary key
 - `user_id`: Foreign key to users table
 - `account_id`: Foreign key to accounts table
@@ -183,7 +186,7 @@ CREATE TABLE proxy_configs (
   test_result_latency INT,
   test_result_error TEXT,
   deleted_at TIMESTAMP NULL,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id),
   INDEX idx_user_id (user_id),
   INDEX idx_type (type),
@@ -194,6 +197,7 @@ CREATE TABLE proxy_configs (
 ```
 
 **Fields:**
+
 - `id`: UUID primary key
 - `user_id`: Foreign key to users table
 - `name`: Proxy name (encrypted)
@@ -234,7 +238,7 @@ CREATE TABLE browser_tabs (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   last_accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted_at TIMESTAMP NULL,
-  
+
   FOREIGN KEY (account_id) REFERENCES accounts(id),
   FOREIGN KEY (user_id) REFERENCES users(id),
   INDEX idx_account_id (account_id),
@@ -247,6 +251,7 @@ CREATE TABLE browser_tabs (
 ```
 
 **Fields:**
+
 - `id`: UUID primary key
 - `account_id`: Foreign key to accounts table
 - `user_id`: Foreign key to users table
@@ -280,7 +285,7 @@ CREATE TABLE tab_states (
   state_data LONGBLOB,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL,
-  
+
   FOREIGN KEY (tab_id) REFERENCES browser_tabs(id),
   FOREIGN KEY (account_id) REFERENCES accounts(id),
   FOREIGN KEY (user_id) REFERENCES users(id),
@@ -291,6 +296,7 @@ CREATE TABLE tab_states (
 ```
 
 **Fields:**
+
 - `id`: UUID primary key
 - `tab_id`: Foreign key to browser tabs
 - `account_id`: Foreign key to accounts
@@ -328,7 +334,7 @@ CREATE TABLE audit_logs (
   status ENUM('success', 'failure') DEFAULT 'success' NOT NULL,
   error_message TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (account_id) REFERENCES accounts(id),
   INDEX idx_user_id (user_id),
@@ -341,6 +347,7 @@ CREATE TABLE audit_logs (
 ```
 
 **Fields:**
+
 - `id`: UUID primary key
 - `user_id`: Foreign key to users table
 - `account_id`: Foreign key to accounts table (optional)
@@ -369,7 +376,7 @@ CREATE TABLE security_events (
   user_agent TEXT,
   metadata JSON,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  
+
   INDEX idx_user_id (user_id),
   INDEX idx_event_type (event_type),
   INDEX idx_severity (severity),
@@ -378,6 +385,7 @@ CREATE TABLE security_events (
 ```
 
 **Fields:**
+
 - `id`: UUID primary key
 - `user_id`: Foreign key to users table (optional)
 - `event_type`: Type of security event
@@ -396,32 +404,35 @@ CREATE TABLE security_events (
 
 The following fields MUST be encrypted before storage:
 
-| Table | Field | Encryption | Key |
-|-------|-------|-----------|-----|
-| accounts | name | AES-256-GCM | Account key |
-| accounts | description | AES-256-GCM | Account key |
-| proxy_configs | name | AES-256-GCM | User key |
-| proxy_configs | username | AES-256-GCM | User key |
-| proxy_configs | password | AES-256-GCM | User key |
-| proxy_configs | v2ray_config | AES-256-GCM | User key |
+| Table         | Field        | Encryption  | Key         |
+| ------------- | ------------ | ----------- | ----------- |
+| accounts      | name         | AES-256-GCM | Account key |
+| accounts      | description  | AES-256-GCM | Account key |
+| proxy_configs | name         | AES-256-GCM | User key    |
+| proxy_configs | username     | AES-256-GCM | User key    |
+| proxy_configs | password     | AES-256-GCM | User key    |
+| proxy_configs | v2ray_config | AES-256-GCM | User key    |
 
 ### 6.2 Key Derivation
 
 ```typescript
 // Derive account key from user key and account ID
-async function deriveAccountKey(userId: number, accountId: string): Promise<CryptoKey> {
+async function deriveAccountKey(
+  userId: number,
+  accountId: string
+): Promise<CryptoKey> {
   const masterKey = await getMasterKey();
   const material = await crypto.subtle.deriveKey(
     {
-      name: 'PBKDF2',
+      name: "PBKDF2",
       salt: new TextEncoder().encode(`${userId}:${accountId}`),
       iterations: 100000,
-      hash: 'SHA-256',
+      hash: "SHA-256",
     },
     masterKey,
-    { name: 'AES-GCM', length: 256 },
+    { name: "AES-GCM", length: 256 },
     false,
-    ['encrypt', 'decrypt']
+    ["encrypt", "decrypt"]
   );
   return material;
 }
@@ -431,15 +442,15 @@ async function deriveUserKey(userId: number): Promise<CryptoKey> {
   const masterKey = await getMasterKey();
   const material = await crypto.subtle.deriveKey(
     {
-      name: 'PBKDF2',
+      name: "PBKDF2",
       salt: new TextEncoder().encode(`user:${userId}`),
       iterations: 100000,
-      hash: 'SHA-256',
+      hash: "SHA-256",
     },
     masterKey,
-    { name: 'AES-GCM', length: 256 },
+    { name: "AES-GCM", length: 256 },
     false,
-    ['encrypt', 'decrypt']
+    ["encrypt", "decrypt"]
   );
   return material;
 }
@@ -452,6 +463,7 @@ async function deriveUserKey(userId: number): Promise<CryptoKey> {
 ### 7.1 Primary Indexes
 
 **User Queries:**
+
 ```sql
 -- Find user by OAuth ID
 CREATE INDEX idx_users_open_id ON users(open_id);
@@ -461,6 +473,7 @@ CREATE INDEX idx_users_role ON users(role);
 ```
 
 **Account Queries:**
+
 ```sql
 -- Find accounts by user
 CREATE INDEX idx_accounts_user_id ON accounts(user_id);
@@ -470,6 +483,7 @@ CREATE INDEX idx_accounts_proxy_config_id ON accounts(proxy_config_id);
 ```
 
 **Session Queries:**
+
 ```sql
 -- Find active sessions
 CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
@@ -481,6 +495,7 @@ CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 ### 7.2 Composite Indexes
 
 **Frequently Used Combinations:**
+
 ```sql
 -- Find tabs by account and status
 CREATE INDEX idx_tabs_account_active ON browser_tabs(account_id, is_active);
@@ -499,6 +514,7 @@ CREATE INDEX idx_proxy_user_type ON proxy_configs(user_id, type, is_active);
 ### 8.1 Common Queries
 
 **Get user with accounts:**
+
 ```sql
 SELECT u.*, COUNT(a.id) as account_count
 FROM users u
@@ -508,6 +524,7 @@ GROUP BY u.id;
 ```
 
 **Get account with tabs:**
+
 ```sql
 SELECT a.*, COUNT(t.id) as tab_count
 FROM accounts a
@@ -516,6 +533,7 @@ WHERE a.id = ? AND a.user_id = ? AND a.deleted_at IS NULL;
 ```
 
 **Get active session:**
+
 ```sql
 SELECT s.*
 FROM sessions s
@@ -526,8 +544,9 @@ LIMIT 1;
 ### 8.2 Aggregation Queries
 
 **User activity stats:**
+
 ```sql
-SELECT 
+SELECT
   u.id,
   u.name,
   COUNT(DISTINCT a.id) as account_count,
@@ -541,8 +560,9 @@ GROUP BY u.id;
 ```
 
 **Proxy usage stats:**
+
 ```sql
-SELECT 
+SELECT
   p.id,
   p.name,
   p.type,
@@ -570,6 +590,7 @@ GROUP BY p.id;
 ### 9.2 Schema Updates
 
 **Versioning:**
+
 ```sql
 CREATE TABLE schema_versions (
   version INT PRIMARY KEY,
@@ -584,6 +605,7 @@ INSERT INTO schema_versions (version, description) VALUES
 ```
 
 **Update Procedure:**
+
 ```sql
 -- 1. Add new column
 ALTER TABLE accounts ADD COLUMN new_field VARCHAR(255);
@@ -606,11 +628,13 @@ INSERT INTO schema_versions (version, description) VALUES
 ### 10.1 Query Optimization
 
 **Use EXPLAIN to analyze queries:**
+
 ```sql
 EXPLAIN SELECT * FROM accounts WHERE user_id = ? AND deleted_at IS NULL;
 ```
 
 **Expected execution plan:**
+
 - Type: ref (uses index)
 - Rows: small number
 - Extra: Using where
@@ -618,7 +642,7 @@ EXPLAIN SELECT * FROM accounts WHERE user_id = ? AND deleted_at IS NULL;
 ### 10.2 Connection Pooling
 
 ```typescript
-import mysql from 'mysql2/promise';
+import mysql from "mysql2/promise";
 
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -642,6 +666,7 @@ export async function getConnection() {
 ### 11.1 Backup Strategy
 
 **Daily automated backups:**
+
 ```bash
 # Full backup
 mysqldump -u root -p incog_browser > backup_$(date +%Y%m%d).sql
@@ -651,6 +676,7 @@ mysqlbinlog --start-position=X mysql-bin.000001 > incremental.sql
 ```
 
 **Backup retention:**
+
 - Daily backups: 7 days
 - Weekly backups: 4 weeks
 - Monthly backups: 12 months
@@ -658,6 +684,7 @@ mysqlbinlog --start-position=X mysql-bin.000001 > incremental.sql
 ### 11.2 Recovery Procedure
 
 **Point-in-time recovery:**
+
 ```bash
 # Restore from full backup
 mysql -u root -p incog_browser < backup_20251201.sql

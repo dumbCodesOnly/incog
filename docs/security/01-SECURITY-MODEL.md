@@ -31,6 +31,7 @@ The security model for the Incog browser application is built on multiple layers
 ### 1.2 Threat Model
 
 **Threat Actors:**
+
 - **Passive Attackers:** Eavesdropping on network traffic
 - **Active Attackers:** Man-in-the-middle attacks, DNS spoofing
 - **Malicious Websites:** XSS, CSRF, clickjacking attacks
@@ -38,6 +39,7 @@ The security model for the Incog browser application is built on multiple layers
 - **Bot Detection Services:** Fingerprinting and behavior analysis
 
 **Attack Vectors:**
+
 - Network interception (MITM, DNS spoofing)
 - Browser fingerprinting (Canvas, WebGL, Navigator)
 - Cookie theft and session hijacking
@@ -56,19 +58,20 @@ The security model for the Incog browser application is built on multiple layers
 
 ```typescript
 interface TLSConfig {
-  version: 'TLS 1.3';
+  version: "TLS 1.3";
   cipherSuites: [
-    'TLS_AES_256_GCM_SHA384',
-    'TLS_CHACHA20_POLY1305_SHA256',
-    'TLS_AES_128_GCM_SHA256',
+    "TLS_AES_256_GCM_SHA384",
+    "TLS_CHACHA20_POLY1305_SHA256",
+    "TLS_AES_128_GCM_SHA256",
   ];
   certificatePinning: boolean;
   hstsEnabled: boolean;
-  hstsMaxAge: 31536000;  // 1 year
+  hstsMaxAge: 31536000; // 1 year
 }
 ```
 
 **Requirements:**
+
 - All connections MUST use TLS 1.3 or higher
 - Only strong cipher suites MUST be enabled
 - Certificate pinning MUST be implemented for critical domains
@@ -80,15 +83,15 @@ interface TLSConfig {
 
 **Required Headers:**
 
-| Header | Value | Purpose |
-|--------|-------|---------|
-| Strict-Transport-Security | max-age=31536000; includeSubDomains; preload | Force HTTPS |
-| Content-Security-Policy | default-src 'self'; script-src 'self' 'unsafe-inline' | Prevent XSS |
-| X-Content-Type-Options | nosniff | Prevent MIME sniffing |
-| X-Frame-Options | DENY | Prevent clickjacking |
-| X-XSS-Protection | 1; mode=block | Legacy XSS protection |
-| Referrer-Policy | strict-origin-when-cross-origin | Control referrer info |
-| Permissions-Policy | geolocation=(), microphone=(), camera=() | Restrict APIs |
+| Header                    | Value                                                 | Purpose               |
+| ------------------------- | ----------------------------------------------------- | --------------------- |
+| Strict-Transport-Security | max-age=31536000; includeSubDomains; preload          | Force HTTPS           |
+| Content-Security-Policy   | default-src 'self'; script-src 'self' 'unsafe-inline' | Prevent XSS           |
+| X-Content-Type-Options    | nosniff                                               | Prevent MIME sniffing |
+| X-Frame-Options           | DENY                                                  | Prevent clickjacking  |
+| X-XSS-Protection          | 1; mode=block                                         | Legacy XSS protection |
+| Referrer-Policy           | strict-origin-when-cross-origin                       | Control referrer info |
+| Permissions-Policy        | geolocation=(), microphone=(), camera=()              | Restrict APIs         |
 
 ### 2.3 CORS Configuration
 
@@ -96,16 +99,17 @@ interface TLSConfig {
 
 ```typescript
 interface CORSConfig {
-  allowedOrigins: string[];  // Whitelist only known origins
-  allowedMethods: ['GET', 'POST', 'OPTIONS'];
-  allowedHeaders: ['Content-Type', 'Authorization'];
-  exposedHeaders: ['X-Total-Count'];
-  credentials: true;  // Allow cookies
-  maxAge: 86400;  // 24 hours
+  allowedOrigins: string[]; // Whitelist only known origins
+  allowedMethods: ["GET", "POST", "OPTIONS"];
+  allowedHeaders: ["Content-Type", "Authorization"];
+  exposedHeaders: ["X-Total-Count"];
+  credentials: true; // Allow cookies
+  maxAge: 86400; // 24 hours
 }
 ```
 
 **Requirements:**
+
 - CORS MUST be configured restrictively
 - Only necessary origins MUST be whitelisted
 - Credentials MUST be allowed for same-origin requests
@@ -142,6 +146,7 @@ interface CORSConfig {
 ```
 
 **Security Requirements:**
+
 - Authorization code MUST be single-use
 - Authorization code MUST expire after 10 minutes
 - State parameter MUST be validated to prevent CSRF
@@ -156,14 +161,14 @@ interface CORSConfig {
 
 ```typescript
 interface SessionCookie {
-  name: '__session';
-  value: string;  // JWT token
-  httpOnly: true;  // Prevent JavaScript access
-  secure: true;  // HTTPS only
-  sameSite: 'Strict';  // CSRF protection
-  maxAge: 86400000;  // 24 hours
-  path: '/';
-  domain: 'example.com';
+  name: "__session";
+  value: string; // JWT token
+  httpOnly: true; // Prevent JavaScript access
+  secure: true; // HTTPS only
+  sameSite: "Strict"; // CSRF protection
+  maxAge: 86400000; // 24 hours
+  path: "/";
+  domain: "example.com";
 }
 ```
 
@@ -171,12 +176,12 @@ interface SessionCookie {
 
 ```typescript
 interface JWTPayload {
-  sub: string;  // User ID
-  iat: number;  // Issued at
-  exp: number;  // Expiration (1 hour)
-  iss: 'incog-browser';
-  aud: 'incog-browser';
-  role: 'user' | 'admin';
+  sub: string; // User ID
+  iat: number; // Issued at
+  exp: number; // Expiration (1 hour)
+  iss: "incog-browser";
+  aud: "incog-browser";
+  role: "user" | "admin";
   sessionId: string;
 }
 ```
@@ -188,6 +193,7 @@ Login → Issue JWT → Store in HTTP-only cookie → Validate on each request �
 ```
 
 **Requirements:**
+
 - Sessions MUST expire after 24 hours of inactivity
 - Sessions MUST be invalidated on logout
 - Sessions MUST be invalidated on password change
@@ -204,6 +210,7 @@ Account Access → Check if biometric required → Prompt for biometric → Veri
 ```
 
 **Implementation:**
+
 - Biometric verification MUST be delegated to OS
 - Biometric data MUST NOT be stored by application
 - Biometric failure MUST lock account temporarily
@@ -216,31 +223,35 @@ Account Access → Check if biometric required → Prompt for biometric → Veri
 
 ```typescript
 enum Role {
-  USER = 'user',
-  ADMIN = 'admin',
+  USER = "user",
+  ADMIN = "admin",
 }
 
 interface Permission {
   resource: string;
-  action: 'create' | 'read' | 'update' | 'delete';
+  action: "create" | "read" | "update" | "delete";
   role: Role;
 }
 
 const permissions: Permission[] = [
-  { resource: 'account', action: 'create', role: Role.USER },
-  { resource: 'account', action: 'read', role: Role.USER },
-  { resource: 'account', action: 'update', role: Role.USER },
-  { resource: 'account', action: 'delete', role: Role.USER },
-  { resource: 'user', action: 'read', role: Role.ADMIN },
-  { resource: 'user', action: 'update', role: Role.ADMIN },
-  { resource: 'user', action: 'delete', role: Role.ADMIN },
+  { resource: "account", action: "create", role: Role.USER },
+  { resource: "account", action: "read", role: Role.USER },
+  { resource: "account", action: "update", role: Role.USER },
+  { resource: "account", action: "delete", role: Role.USER },
+  { resource: "user", action: "read", role: Role.ADMIN },
+  { resource: "user", action: "update", role: Role.ADMIN },
+  { resource: "user", action: "delete", role: Role.ADMIN },
 ];
 ```
 
 **Access Control Enforcement:**
 
 ```typescript
-function checkPermission(user: User, resource: string, action: string): boolean {
+function checkPermission(
+  user: User,
+  resource: string,
+  action: string
+): boolean {
   const permission = permissions.find(
     p => p.resource === resource && p.action === action && p.role === user.role
   );
@@ -250,14 +261,14 @@ function checkPermission(user: User, resource: string, action: string): boolean 
 // Usage in tRPC procedure
 export const protectedProcedure = baseProcedure.use(({ ctx, next }) => {
   if (!ctx.user) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
+    throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return next({ ctx });
 });
 
 export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== 'admin') {
-    throw new TRPCError({ code: 'FORBIDDEN' });
+  if (ctx.user.role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN" });
   }
   return next({ ctx });
 });
@@ -273,54 +284,57 @@ export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 
 ```typescript
 interface EncryptionConfig {
-  algorithm: 'AES-256-GCM';
-  keyLength: 256;  // bits
-  ivLength: 96;  // bits (12 bytes)
-  tagLength: 128;  // bits (16 bytes)
+  algorithm: "AES-256-GCM";
+  keyLength: 256; // bits
+  ivLength: 96; // bits (12 bytes)
+  tagLength: 128; // bits (16 bytes)
 }
 
 async function encryptData(plaintext: string, key: CryptoKey): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  
+
   const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
+    { name: "AES-GCM", iv },
     key,
     new TextEncoder().encode(plaintext)
   );
-  
+
   // Combine IV + ciphertext + tag
   const combined = new Uint8Array(iv.length + encrypted.byteLength);
   combined.set(iv, 0);
   combined.set(new Uint8Array(encrypted), iv.length);
-  
+
   return btoa(String.fromCharCode(...combined));
 }
 
-async function decryptData(ciphertext: string, key: CryptoKey): Promise<string> {
+async function decryptData(
+  ciphertext: string,
+  key: CryptoKey
+): Promise<string> {
   const combined = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
   const iv = combined.slice(0, 12);
   const encrypted = combined.slice(12);
-  
+
   const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
+    { name: "AES-GCM", iv },
     key,
     encrypted
   );
-  
+
   return new TextDecoder().decode(decrypted);
 }
 ```
 
 **Encryption Scope:**
 
-| Data | Encryption | Key Storage |
-|------|-----------|-------------|
-| User passwords | Hashed (bcrypt) | Database |
-| Proxy credentials | AES-256-GCM | Keystore |
-| Account metadata | AES-256-GCM | Keystore |
-| Session tokens | Signed (JWT) | Cookie |
-| API keys | AES-256-GCM | Keystore |
-| User files | AES-256-GCM | S3 + Keystore |
+| Data              | Encryption      | Key Storage   |
+| ----------------- | --------------- | ------------- |
+| User passwords    | Hashed (bcrypt) | Database      |
+| Proxy credentials | AES-256-GCM     | Keystore      |
+| Account metadata  | AES-256-GCM     | Keystore      |
+| Session tokens    | Signed (JWT)    | Cookie        |
+| API keys          | AES-256-GCM     | Keystore      |
+| User files        | AES-256-GCM     | S3 + Keystore |
 
 ### 4.2 Key Management
 
@@ -389,10 +403,16 @@ CREATE TABLE proxy_configs (
 **Query Encryption/Decryption:**
 
 ```typescript
-async function createAccount(userId: number, name: string, description?: string) {
+async function createAccount(
+  userId: number,
+  name: string,
+  description?: string
+) {
   const encryptedName = await encryptData(name, accountKey);
-  const encryptedDescription = description ? await encryptData(description, accountKey) : null;
-  
+  const encryptedDescription = description
+    ? await encryptData(description, accountKey)
+    : null;
+
   return db.insert(accounts).values({
     id: generateUUID(),
     userId,
@@ -404,16 +424,22 @@ async function createAccount(userId: number, name: string, description?: string)
 }
 
 async function getAccount(accountId: string) {
-  const account = await db.select().from(accounts).where(eq(accounts.id, accountId)).limit(1);
-  
+  const account = await db
+    .select()
+    .from(accounts)
+    .where(eq(accounts.id, accountId))
+    .limit(1);
+
   if (!account.length) return null;
-  
+
   const decrypted = {
     ...account[0],
     name: await decryptData(account[0].name, accountKey),
-    description: account[0].description ? await decryptData(account[0].description, accountKey) : null,
+    description: account[0].description
+      ? await decryptData(account[0].description, accountKey)
+      : null,
   };
-  
+
   return decrypted;
 }
 ```
@@ -432,22 +458,22 @@ Websites can extract pixel data from canvas elements to create a unique fingerpr
 ```javascript
 // Override canvas methods to return generic data
 const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
-HTMLCanvasElement.prototype.toDataURL = function(type = 'image/png', quality) {
+HTMLCanvasElement.prototype.toDataURL = function (type = "image/png", quality) {
   // Check if this looks like a fingerprinting canvas
   if (this.width === 280 && this.height === 60) {
     // Return a generic data URL
-    return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAR...';
+    return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAR...";
   }
   return originalToDataURL.call(this, type, quality);
 };
 
 // Override getImageData to return modified data
 const originalGetImageData = CanvasRenderingContext2D.prototype.getImageData;
-CanvasRenderingContext2D.prototype.getImageData = function(sx, sy, sw, sh) {
+CanvasRenderingContext2D.prototype.getImageData = function (sx, sy, sw, sh) {
   const imageData = originalGetImageData.call(this, sx, sy, sw, sh);
   // Modify pixel data slightly to prevent fingerprinting
   for (let i = 0; i < imageData.data.length; i += 4) {
-    imageData.data[i] ^= Math.floor(Math.random() * 256);  // Random noise
+    imageData.data[i] ^= Math.floor(Math.random() * 256); // Random noise
   }
   return imageData;
 };
@@ -463,18 +489,18 @@ Websites can query WebGL capabilities to create a unique fingerprint of the GPU.
 ```javascript
 // Override WebGL getParameter to return generic values
 const originalGetParameter = WebGLRenderingContext.prototype.getParameter;
-WebGLRenderingContext.prototype.getParameter = function(param) {
+WebGLRenderingContext.prototype.getParameter = function (param) {
   if (param === WebGLRenderingContext.VENDOR) {
-    return 'Intel Inc.';  // Generic vendor
+    return "Intel Inc."; // Generic vendor
   }
   if (param === WebGLRenderingContext.RENDERER) {
-    return 'Intel Iris OpenGL Engine';  // Generic renderer
+    return "Intel Iris OpenGL Engine"; // Generic renderer
   }
   if (param === WebGLRenderingContext.UNMASKED_VENDOR_WEBGL) {
-    return 'Intel Inc.';
+    return "Intel Inc.";
   }
   if (param === WebGLRenderingContext.UNMASKED_RENDERER_WEBGL) {
-    return 'Intel Iris OpenGL Engine';
+    return "Intel Iris OpenGL Engine";
   }
   return originalGetParameter.call(this, param);
 };
@@ -489,35 +515,35 @@ Websites can read navigator properties to identify the browser and detect automa
 
 ```javascript
 // Spoof navigator.webdriver
-Object.defineProperty(navigator, 'webdriver', {
+Object.defineProperty(navigator, "webdriver", {
   get: () => false,
   configurable: true,
 });
 
 // Spoof navigator.plugins
-Object.defineProperty(navigator, 'plugins', {
+Object.defineProperty(navigator, "plugins", {
   get: () => [
-    { name: 'Chrome PDF Plugin', description: 'Portable Document Format' },
-    { name: 'Chrome PDF Viewer', description: '' },
-    { name: 'Native Client Executable', description: '' },
+    { name: "Chrome PDF Plugin", description: "Portable Document Format" },
+    { name: "Chrome PDF Viewer", description: "" },
+    { name: "Native Client Executable", description: "" },
   ],
   configurable: true,
 });
 
 // Spoof navigator.languages
-Object.defineProperty(navigator, 'languages', {
-  get: () => ['en-US', 'en'],
+Object.defineProperty(navigator, "languages", {
+  get: () => ["en-US", "en"],
   configurable: true,
 });
 
 // Spoof navigator.hardwareConcurrency
-Object.defineProperty(navigator, 'hardwareConcurrency', {
+Object.defineProperty(navigator, "hardwareConcurrency", {
   get: () => 8,
   configurable: true,
 });
 
 // Spoof navigator.deviceMemory
-Object.defineProperty(navigator, 'deviceMemory', {
+Object.defineProperty(navigator, "deviceMemory", {
   get: () => 8,
   configurable: true,
 });
@@ -530,18 +556,18 @@ Object.defineProperty(navigator, 'deviceMemory', {
 ```typescript
 const userAgents = [
   // Chrome Desktop
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+
   // Firefox Desktop
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0',
-  
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
+
   // Safari
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
-  
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+
   // Mobile Chrome
-  'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+  "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
 ];
 
 function getRandomUserAgent(): string {
@@ -558,7 +584,7 @@ function getRandomUserAgent(): string {
 **Validation Rules:**
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Account creation validation
 const createAccountSchema = z.object({
@@ -570,7 +596,7 @@ const createAccountSchema = z.object({
 // Proxy configuration validation
 const createProxyConfigSchema = z.object({
   name: z.string().min(1).max(100),
-  type: z.enum(['HTTP', 'HTTPS', 'SOCKS5', 'V2RAY_VMESS', 'V2RAY_VLESS']),
+  type: z.enum(["HTTP", "HTTPS", "SOCKS5", "V2RAY_VMESS", "V2RAY_VLESS"]),
   host: z.string().ip().or(z.string().hostname()),
   port: z.number().int().min(1).max(65535),
   username: z.string().optional(),
@@ -589,6 +615,7 @@ export const account = router({
 ```
 
 **Validation Requirements:**
+
 - All user input MUST be validated
 - Validation MUST use schema-based approach (Zod)
 - Validation errors MUST not expose system details
@@ -602,11 +629,11 @@ export const account = router({
 ```typescript
 function escapeHtml(text: string): string {
   const map: Record<string, string> = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
   };
   return text.replace(/[&<>"']/g, m => map[m]);
 }
@@ -635,6 +662,7 @@ function encodeUrl(url: string): string {
 ### 7.1 Static Analysis
 
 **Tools:**
+
 - ESLint with security plugins
 - TypeScript strict mode
 - SonarQube for code quality
@@ -657,6 +685,7 @@ function encodeUrl(url: string): string {
 ### 7.2 Dynamic Testing
 
 **OWASP Top 10 Testing:**
+
 - Injection attacks (SQL, NoSQL, Command)
 - Broken authentication
 - Sensitive data exposure
@@ -671,6 +700,7 @@ function encodeUrl(url: string): string {
 ### 7.3 Penetration Testing
 
 **Scope:**
+
 - Authentication bypass
 - Session hijacking
 - Cross-site scripting
@@ -699,28 +729,28 @@ interface AuditLog {
   ipAddress: string;
   userAgent: string;
   timestamp: Date;
-  status: 'success' | 'failure';
+  status: "success" | "failure";
   errorMessage?: string;
 }
 
 // Events to log
 const auditEvents = [
-  'user.login',
-  'user.logout',
-  'user.passwordChange',
-  'account.create',
-  'account.update',
-  'account.delete',
-  'account.switch',
-  'proxy.create',
-  'proxy.update',
-  'proxy.delete',
-  'proxy.test',
-  'file.upload',
-  'file.download',
-  'file.delete',
-  'admin.userUpdate',
-  'admin.userDelete',
+  "user.login",
+  "user.logout",
+  "user.passwordChange",
+  "account.create",
+  "account.update",
+  "account.delete",
+  "account.switch",
+  "proxy.create",
+  "proxy.update",
+  "proxy.delete",
+  "proxy.test",
+  "file.upload",
+  "file.download",
+  "file.delete",
+  "admin.userUpdate",
+  "admin.userDelete",
 ];
 ```
 
@@ -728,17 +758,18 @@ const auditEvents = [
 
 **Retention Policy:**
 
-| Data Type | Retention Period | Reason |
-|-----------|------------------|--------|
-| Audit logs | 1 year | Compliance and investigation |
-| User sessions | 24 hours | Security and performance |
-| Failed login attempts | 90 days | Security analysis |
-| API access logs | 30 days | Monitoring and debugging |
-| Deleted user data | 30 days | Recovery and compliance |
+| Data Type             | Retention Period | Reason                       |
+| --------------------- | ---------------- | ---------------------------- |
+| Audit logs            | 1 year           | Compliance and investigation |
+| User sessions         | 24 hours         | Security and performance     |
+| Failed login attempts | 90 days          | Security analysis            |
+| API access logs       | 30 days          | Monitoring and debugging     |
+| Deleted user data     | 30 days          | Recovery and compliance      |
 
 ### 8.3 Privacy Compliance
 
 **GDPR Compliance:**
+
 - User data collection MUST be transparent
 - Users MUST have right to access their data
 - Users MUST have right to delete their data
@@ -746,6 +777,7 @@ const auditEvents = [
 - Data breaches MUST be reported within 72 hours
 
 **Data Minimization:**
+
 - Only necessary data MUST be collected
 - Data MUST be deleted when no longer needed
 - Personal data MUST be anonymized when possible
@@ -759,12 +791,12 @@ const auditEvents = [
 
 **Severity Levels:**
 
-| Level | Description | Response Time |
-|-------|-------------|---|
-| Critical | Data breach, system compromise | 1 hour |
-| High | Authentication bypass, privilege escalation | 4 hours |
-| Medium | Vulnerability, security misconfiguration | 24 hours |
-| Low | Minor security issue, best practice violation | 1 week |
+| Level    | Description                                   | Response Time |
+| -------- | --------------------------------------------- | ------------- |
+| Critical | Data breach, system compromise                | 1 hour        |
+| High     | Authentication bypass, privilege escalation   | 4 hours       |
+| Medium   | Vulnerability, security misconfiguration      | 24 hours      |
+| Low      | Minor security issue, best practice violation | 1 week        |
 
 ### 9.2 Response Procedures
 
@@ -780,6 +812,7 @@ const auditEvents = [
 ### 9.3 Communication
 
 **Notification Requirements:**
+
 - Users MUST be notified of data breaches
 - Notification MUST include scope and impact
 - Notification MUST include remediation steps

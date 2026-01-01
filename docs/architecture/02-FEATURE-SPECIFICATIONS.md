@@ -21,6 +21,7 @@ The multi-account management system enables users to create, manage, and switch 
 ### 1.2 Functional Requirements
 
 **Account Creation:**
+
 - Users MUST be able to create unlimited accounts
 - Each account MUST have a unique UUID identifier
 - Each account MUST have a user-defined name and optional description
@@ -28,18 +29,21 @@ The multi-account management system enables users to create, manage, and switch 
 - Account metadata MUST be encrypted before storage
 
 **Account Listing:**
+
 - Users MUST be able to view all their accounts
 - Account list MUST display account name, description, and creation date
 - Account list MUST support sorting and filtering
 - Account list MUST show account status (active, protected, etc.)
 
 **Account Modification:**
+
 - Users MUST be able to update account name and description
 - Users MUST be able to enable/disable biometric protection
 - Users MUST be able to assign proxy configurations to accounts
 - Modifications MUST not affect current session if account is active
 
 **Account Deletion:**
+
 - Users MUST be able to delete accounts
 - Deletion MUST be preceded by confirmation dialog
 - Deletion MUST remove all associated data (tabs, cookies, cache)
@@ -47,6 +51,7 @@ The multi-account management system enables users to create, manage, and switch 
 - Deletion MUST be irreversible
 
 **Account Switching:**
+
 - Users MUST be able to switch between accounts
 - Switching MUST clear current account's session context
 - Switching MUST load new account's isolated context
@@ -59,13 +64,13 @@ The multi-account management system enables users to create, manage, and switch 
 
 ```typescript
 interface Account {
-  id: string;                    // UUID
-  userId: string;                // Foreign key to users table
-  name: string;                  // Encrypted
-  description?: string;          // Encrypted
-  isProtected: boolean;          // Biometric auth required
-  proxyConfigId?: string;        // Foreign key to proxy configs
-  dataDirectory: string;         // Unique suffix for isolation
+  id: string; // UUID
+  userId: string; // Foreign key to users table
+  name: string; // Encrypted
+  description?: string; // Encrypted
+  isProtected: boolean; // Biometric auth required
+  proxyConfigId?: string; // Foreign key to proxy configs
+  dataDirectory: string; // Unique suffix for isolation
   createdAt: Date;
   updatedAt: Date;
   lastAccessedAt?: Date;
@@ -75,6 +80,7 @@ interface Account {
 **Storage Isolation:**
 
 Each account MUST have a dedicated storage context:
+
 - **Client-side:** Separate IndexedDB database per account
 - **Server-side:** Separate encrypted fields in database
 - **Cookies:** Isolated per account context
@@ -96,6 +102,7 @@ interface AccountContext {
 ### 1.4 API Contracts
 
 **Create Account:**
+
 ```typescript
 account.create({
   name: string;                  // Required, max 100 chars
@@ -105,6 +112,7 @@ account.create({
 ```
 
 **List Accounts:**
+
 ```typescript
 account.list({
   sortBy?: 'name' | 'createdAt' | 'lastAccessedAt';
@@ -114,6 +122,7 @@ account.list({
 ```
 
 **Switch Account:**
+
 ```typescript
 account.switch({
   accountId: string;
@@ -121,6 +130,7 @@ account.switch({
 ```
 
 **Update Account:**
+
 ```typescript
 account.update({
   accountId: string;
@@ -132,6 +142,7 @@ account.update({
 ```
 
 **Delete Account:**
+
 ```typescript
 account.delete({
   accountId: string;
@@ -161,6 +172,7 @@ WebView isolation ensures complete separation of browsing contexts, preventing c
 ### 2.2 Functional Requirements
 
 **Isolated Storage:**
+
 - Each account MUST have isolated cookies
 - Each account MUST have isolated cache
 - Each account MUST have isolated local storage
@@ -168,6 +180,7 @@ WebView isolation ensures complete separation of browsing contexts, preventing c
 - Storage MUST be cleared when switching accounts
 
 **Security Settings:**
+
 - File access MUST be disabled
 - Content access MUST be disabled
 - Mixed content MUST be blocked
@@ -175,6 +188,7 @@ WebView isolation ensures complete separation of browsing contexts, preventing c
 - JavaScript MUST be enabled (for anti-detection)
 
 **State Persistence:**
+
 - WebView state MUST be saved per account
 - WebView state MUST be restored when switching to account
 - State MUST include navigation history
@@ -182,6 +196,7 @@ WebView isolation ensures complete separation of browsing contexts, preventing c
 - State MUST be encrypted before storage
 
 **Session Management:**
+
 - Each account MUST maintain independent session cookies
 - Session cookies MUST expire after configurable timeout
 - Session cookies MUST be HTTP-only and Secure
@@ -196,12 +211,12 @@ interface WebViewConfig {
   accountId: string;
   allowFileAccess: false;
   allowContentAccess: false;
-  mixedContentMode: 'NEVER_ALLOW';
+  mixedContentMode: "NEVER_ALLOW";
   thirdPartyCookiesEnabled: false;
   domStorageEnabled: true;
   databaseEnabled: true;
-  cacheMode: 'LOAD_DEFAULT';
-  userAgent: string;  // Rotated
+  cacheMode: "LOAD_DEFAULT";
+  userAgent: string; // Rotated
 }
 ```
 
@@ -279,6 +294,7 @@ The anti-detection system implements multiple techniques to prevent browser fing
 ### 3.2 Functional Requirements
 
 **User Agent Rotation:**
+
 - User agent MUST be rotated per request
 - User agents MUST be realistic and current
 - User agents MUST include desktop and mobile variants
@@ -286,6 +302,7 @@ The anti-detection system implements multiple techniques to prevent browser fing
 - User agent selection MUST be randomized
 
 **Canvas Fingerprinting Protection:**
+
 - Canvas API MUST be spoofed
 - `toDataURL()` MUST return generic data
 - `getImageData()` MUST return modified data
@@ -293,6 +310,7 @@ The anti-detection system implements multiple techniques to prevent browser fing
 - Protection MUST be transparent to legitimate uses
 
 **WebGL Fingerprinting Protection:**
+
 - WebGL API MUST be spoofed
 - `getParameter()` MUST return generic GPU info
 - Vendor and renderer MUST be generic
@@ -300,6 +318,7 @@ The anti-detection system implements multiple techniques to prevent browser fing
 - Protection MUST be transparent to legitimate uses
 
 **Navigator Spoofing:**
+
 - `navigator.webdriver` MUST be false
 - `navigator.plugins` MUST be populated
 - `navigator.languages` MUST be realistic
@@ -307,6 +326,7 @@ The anti-detection system implements multiple techniques to prevent browser fing
 - `navigator.deviceMemory` MUST be realistic
 
 **Behavior Simulation:**
+
 - Mouse movements MUST be simulated
 - Scrolling MUST appear human-like
 - Typing MUST have realistic delays
@@ -314,6 +334,7 @@ The anti-detection system implements multiple techniques to prevent browser fing
 - Idle time MUST be simulated
 
 **Rate Limiting:**
+
 - Requests per host MUST be throttled
 - Rate limit MUST be configurable per account
 - Rate limit MUST be enforced transparently
@@ -330,7 +351,7 @@ interface UserAgent {
   userAgent: string;
   browser: string;
   version: string;
-  platform: 'desktop' | 'mobile';
+  platform: "desktop" | "mobile";
   os: string;
   osVersion: string;
   lastUpdated: Date;
@@ -362,7 +383,7 @@ interface RateLimitConfig {
   host: string;
   requestsPerMinute: number;
   burstSize: number;
-  windowSize: number;  // milliseconds
+  windowSize: number; // milliseconds
 }
 ```
 
@@ -373,28 +394,28 @@ interface RateLimitConfig {
 ```javascript
 // Spoof canvas
 const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
-HTMLCanvasElement.prototype.toDataURL = function() {
+HTMLCanvasElement.prototype.toDataURL = function () {
   if (this.width === 280 && this.height === 60) {
     // Likely fingerprinting canvas
-    return 'data:image/png;base64,iVBORw0KGgoAAAANS...';
+    return "data:image/png;base64,iVBORw0KGgoAAAANS...";
   }
   return originalToDataURL.apply(this, arguments);
 };
 
 // Spoof WebGL
 const originalGetParameter = WebGLRenderingContext.prototype.getParameter;
-WebGLRenderingContext.prototype.getParameter = function(param) {
+WebGLRenderingContext.prototype.getParameter = function (param) {
   if (param === 37445) {
-    return 'Intel Inc.';  // Generic vendor
+    return "Intel Inc."; // Generic vendor
   }
   if (param === 37446) {
-    return 'Intel Iris OpenGL Engine';  // Generic renderer
+    return "Intel Iris OpenGL Engine"; // Generic renderer
   }
   return originalGetParameter.apply(this, arguments);
 };
 
 // Spoof navigator
-Object.defineProperty(navigator, 'webdriver', {
+Object.defineProperty(navigator, "webdriver", {
   get: () => false,
 });
 ```
@@ -421,6 +442,7 @@ The proxy integration system enables flexible network configuration through supp
 ### 4.2 Functional Requirements
 
 **Proxy Protocol Support:**
+
 - HTTP proxies MUST be supported
 - HTTPS proxies MUST be supported
 - SOCKS5 proxies MUST be supported
@@ -428,6 +450,7 @@ The proxy integration system enables flexible network configuration through supp
 - Protocol selection MUST be user-configurable
 
 **Per-Account Configuration:**
+
 - Each account MUST support proxy assignment
 - Proxy configuration MUST be encrypted
 - Proxy credentials MUST be encrypted
@@ -435,6 +458,7 @@ The proxy integration system enables flexible network configuration through supp
 - Proxy can be optional (direct connection)
 
 **Proxy Testing:**
+
 - Proxy connectivity MUST be testable
 - Test MUST verify successful connection
 - Test MUST measure latency
@@ -442,6 +466,7 @@ The proxy integration system enables flexible network configuration through supp
 - Test results MUST be displayed to user
 
 **Connection Management:**
+
 - Connections MUST be pooled for efficiency
 - Connections MUST have configurable timeouts
 - Connections MUST support keep-alive
@@ -457,12 +482,19 @@ interface ProxyConfig {
   id: string;
   userId: string;
   name: string;
-  type: 'HTTP' | 'HTTPS' | 'SOCKS5' | 'V2RAY_VMESS' | 'V2RAY_VLESS' | 'V2RAY_TROJAN' | 'V2RAY_SHADOWSOCKS';
+  type:
+    | "HTTP"
+    | "HTTPS"
+    | "SOCKS5"
+    | "V2RAY_VMESS"
+    | "V2RAY_VLESS"
+    | "V2RAY_TROJAN"
+    | "V2RAY_SHADOWSOCKS";
   host: string;
   port: number;
-  username?: string;  // Encrypted
-  password?: string;  // Encrypted
-  v2rayConfig?: string;  // JSON, Encrypted
+  username?: string; // Encrypted
+  password?: string; // Encrypted
+  v2rayConfig?: string; // JSON, Encrypted
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -479,7 +511,7 @@ interface ProxyConfig {
 
 ```typescript
 interface V2RayConfig {
-  protocol: 'vmess' | 'vless' | 'trojan' | 'shadowsocks';
+  protocol: "vmess" | "vless" | "trojan" | "shadowsocks";
   server: string;
   port: number;
   uuid?: string;
@@ -498,9 +530,9 @@ interface V2RayConfig {
 interface ConnectionPool {
   proxyConfigId: string;
   maxConnections: number;
-  idleTimeout: number;  // milliseconds
-  connectionTimeout: number;  // milliseconds
-  keepAliveInterval: number;  // milliseconds
+  idleTimeout: number; // milliseconds
+  connectionTimeout: number; // milliseconds
+  keepAliveInterval: number; // milliseconds
   activeConnections: Connection[];
   idleConnections: Connection[];
 }
@@ -516,18 +548,18 @@ async function testProxyConnection(config: ProxyConfig): Promise<TestResult> {
   try {
     // Create test connection
     const connection = await createProxyConnection(config);
-    
+
     // Test connectivity
-    const response = await connection.fetch('https://httpbin.org/ip', {
+    const response = await connection.fetch("https://httpbin.org/ip", {
       timeout: 5000,
     });
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    
+
     const latency = Date.now() - startTime;
-    
+
     return {
       success: true,
       latency,
@@ -552,11 +584,11 @@ async function routeRequestThroughProxy(
 ): Promise<Response> {
   // Get connection from pool
   const connection = await connectionPool.acquire(proxyConfig.id);
-  
+
   try {
     // Route request through proxy
     const response = await connection.fetch(request);
-    
+
     // Return response
     return response;
   } finally {
@@ -588,6 +620,7 @@ Incognito mode provides memory-only browsing with no persistent storage, enablin
 ### 5.2 Functional Requirements
 
 **Memory-Only Storage:**
+
 - No data MUST be written to disk
 - All data MUST be stored in memory only
 - Memory MUST be cleared on session close
@@ -595,12 +628,14 @@ Incognito mode provides memory-only browsing with no persistent storage, enablin
 - Cache MUST not be persisted
 
 **Isolation Groups:**
+
 - Multiple incognito sessions MUST be independent
 - Each session MUST have isolated storage
 - Sessions MUST not interfere with each other
 - Sessions MUST not affect regular accounts
 
 **Auto-Cleanup:**
+
 - Session data MUST be destroyed on close
 - Memory MUST be freed immediately
 - WebView MUST be destroyed
@@ -608,6 +643,7 @@ Incognito mode provides memory-only browsing with no persistent storage, enablin
 - Cache MUST be cleared
 
 **Visual Indication:**
+
 - Incognito mode MUST be visually distinct
 - UI MUST show incognito indicator
 - Tabs MUST be marked as incognito
@@ -691,6 +727,7 @@ Tab management enables users to organize multiple browsing sessions within an ac
 ### 6.2 Functional Requirements
 
 **Tab Creation:**
+
 - Users MUST be able to create new tabs
 - Tabs MUST have unique identifiers
 - Tabs MUST have configurable initial URL
@@ -698,6 +735,7 @@ Tab management enables users to organize multiple browsing sessions within an ac
 - Tab creation MUST be instant
 
 **Tab Listing:**
+
 - Users MUST be able to view all tabs
 - Tab list MUST show tab title and URL
 - Tab list MUST show tab status (loading, idle)
@@ -705,6 +743,7 @@ Tab management enables users to organize multiple browsing sessions within an ac
 - Tab list MUST show thumbnail preview
 
 **Tab Switching:**
+
 - Users MUST be able to switch between tabs
 - Switching MUST be instant (< 100ms)
 - Switching MUST preserve tab state
@@ -712,6 +751,7 @@ Tab management enables users to organize multiple browsing sessions within an ac
 - Switching MUST show tab content
 
 **Tab Closing:**
+
 - Users MUST be able to close tabs
 - Closing MUST be reversible (undo)
 - Closing MUST free resources
@@ -719,6 +759,7 @@ Tab management enables users to organize multiple browsing sessions within an ac
 - Closing last tab MUST close account
 
 **Tab State Persistence:**
+
 - Tab state MUST be saved on close
 - Tab state MUST be restored on open
 - Tab state MUST include URL, title, scroll position
@@ -778,6 +819,7 @@ interface TabManager {
 Users MUST be able to enable biometric authentication (fingerprint or face recognition) for account protection.
 
 **Requirements:**
+
 - Biometric auth MUST be optional per account
 - Biometric auth MUST be required on account access
 - Failed biometric auth MUST lock account temporarily
@@ -789,6 +831,7 @@ Users MUST be able to enable biometric authentication (fingerprint or face recog
 All sensitive data MUST be encrypted before storage.
 
 **Requirements:**
+
 - Encryption MUST use AES-256-GCM
 - Encryption keys MUST be stored securely
 - Encryption keys MUST be rotated regularly
@@ -800,6 +843,7 @@ All sensitive data MUST be encrypted before storage.
 The application MUST verify environment integrity on startup.
 
 **Requirements:**
+
 - Root detection MUST be performed
 - Emulator detection MUST be performed
 - Tamper detection MUST be performed
@@ -815,6 +859,7 @@ The application MUST verify environment integrity on startup.
 The application MUST integrate with Manus OAuth for authentication.
 
 **Integration Points:**
+
 - Login flow redirects to OAuth portal
 - OAuth callback handled at `/api/oauth/callback`
 - User information stored in database
@@ -826,6 +871,7 @@ The application MUST integrate with Manus OAuth for authentication.
 The application MUST integrate with AWS S3 for file storage.
 
 **Integration Points:**
+
 - File uploads to S3 via presigned URLs
 - File metadata stored in database
 - Presigned URLs generated for access
@@ -837,6 +883,7 @@ The application MUST integrate with AWS S3 for file storage.
 The application MUST integrate with V2Ray core for advanced proxy support.
 
 **Integration Points:**
+
 - V2Ray configuration stored in database
 - V2Ray core initialized with configuration
 - Requests routed through V2Ray

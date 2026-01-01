@@ -18,15 +18,15 @@ The proxy integration architecture enables flexible network configuration throug
 
 The Incog browser supports the following proxy protocols:
 
-| Protocol | Type | Port | Authentication | Encryption | Use Case |
-|----------|------|------|---|---|---|
-| HTTP | Standard | 80, 8080, 3128 | Basic, Digest | None | Legacy systems, debugging |
-| HTTPS | Tunneling | 443, 8443 | Basic, Digest | TLS | Secure proxying |
-| SOCKS5 | Tunneling | 1080, 1081 | Username/Password | None | Universal protocol |
-| V2Ray VMess | Encrypted | Custom | UUID | AES-128-GCM | Circumvention, privacy |
-| V2Ray VLESS | Lightweight | Custom | UUID | TLS | High performance |
-| V2Ray Trojan | Disguised | 443 | Password | TLS | Evasion, stealth |
-| V2Ray Shadowsocks | Stream | Custom | Password | ChaCha20 | Lightweight, fast |
+| Protocol          | Type        | Port           | Authentication    | Encryption  | Use Case                  |
+| ----------------- | ----------- | -------------- | ----------------- | ----------- | ------------------------- |
+| HTTP              | Standard    | 80, 8080, 3128 | Basic, Digest     | None        | Legacy systems, debugging |
+| HTTPS             | Tunneling   | 443, 8443      | Basic, Digest     | TLS         | Secure proxying           |
+| SOCKS5            | Tunneling   | 1080, 1081     | Username/Password | None        | Universal protocol        |
+| V2Ray VMess       | Encrypted   | Custom         | UUID              | AES-128-GCM | Circumvention, privacy    |
+| V2Ray VLESS       | Lightweight | Custom         | UUID              | TLS         | High performance          |
+| V2Ray Trojan      | Disguised   | 443            | Password          | TLS         | Evasion, stealth          |
+| V2Ray Shadowsocks | Stream      | Custom         | Password          | ChaCha20    | Lightweight, fast         |
 
 ### 1.2 Protocol Selection
 
@@ -46,15 +46,15 @@ Users select proxy protocol based on requirements:
 
 ```typescript
 interface ProxyConfig {
-  id: string;                    // UUID
-  userId: string;                // Foreign key
-  name: string;                  // Encrypted
-  type: ProxyType;               // HTTP, HTTPS, SOCKS5, V2RAY_*
-  host: string;                  // IP or hostname
-  port: number;                  // 1-65535
-  username?: string;             // Encrypted
-  password?: string;             // Encrypted
-  v2rayConfig?: V2RayConfig;     // JSON, Encrypted
+  id: string; // UUID
+  userId: string; // Foreign key
+  name: string; // Encrypted
+  type: ProxyType; // HTTP, HTTPS, SOCKS5, V2RAY_*
+  host: string; // IP or hostname
+  port: number; // 1-65535
+  username?: string; // Encrypted
+  password?: string; // Encrypted
+  v2rayConfig?: V2RayConfig; // JSON, Encrypted
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -63,18 +63,18 @@ interface ProxyConfig {
 }
 
 enum ProxyType {
-  HTTP = 'HTTP',
-  HTTPS = 'HTTPS',
-  SOCKS5 = 'SOCKS5',
-  V2RAY_VMESS = 'V2RAY_VMESS',
-  V2RAY_VLESS = 'V2RAY_VLESS',
-  V2RAY_TROJAN = 'V2RAY_TROJAN',
-  V2RAY_SHADOWSOCKS = 'V2RAY_SHADOWSOCKS',
+  HTTP = "HTTP",
+  HTTPS = "HTTPS",
+  SOCKS5 = "SOCKS5",
+  V2RAY_VMESS = "V2RAY_VMESS",
+  V2RAY_VLESS = "V2RAY_VLESS",
+  V2RAY_TROJAN = "V2RAY_TROJAN",
+  V2RAY_SHADOWSOCKS = "V2RAY_SHADOWSOCKS",
 }
 
 interface ProxyTestResult {
   success: boolean;
-  latency: number;               // milliseconds
+  latency: number; // milliseconds
   timestamp: Date;
   error?: string;
 }
@@ -123,27 +123,31 @@ CREATE TABLE account_proxy_assignments (
 ```typescript
 export const proxy = router({
   create: protectedProcedure
-    .input(z.object({
-      name: z.string().min(1).max(100),
-      type: z.nativeEnum(ProxyType),
-      host: z.string().ip().or(z.string().hostname()),
-      port: z.number().int().min(1).max(65535),
-      username: z.string().optional(),
-      password: z.string().optional(),
-      v2rayConfig: z.object({
-        protocol: z.enum(['vmess', 'vless', 'trojan', 'shadowsocks']),
-        server: z.string(),
-        port: z.number(),
-        uuid: z.string().optional(),
+    .input(
+      z.object({
+        name: z.string().min(1).max(100),
+        type: z.nativeEnum(ProxyType),
+        host: z.string().ip().or(z.string().hostname()),
+        port: z.number().int().min(1).max(65535),
+        username: z.string().optional(),
         password: z.string().optional(),
-        cipher: z.string().optional(),
-        tls: z.boolean().optional(),
-      }).optional(),
-    }))
+        v2rayConfig: z
+          .object({
+            protocol: z.enum(["vmess", "vless", "trojan", "shadowsocks"]),
+            server: z.string(),
+            port: z.number(),
+            uuid: z.string().optional(),
+            password: z.string().optional(),
+            cipher: z.string().optional(),
+            tls: z.boolean().optional(),
+          })
+          .optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
       const proxyId = generateUUID();
-      
+
       // Encrypt sensitive fields
       const encryptedName = await encryptData(input.name, userKey);
       const encryptedUsername = input.username
@@ -155,7 +159,7 @@ export const proxy = router({
       const encryptedV2rayConfig = input.v2rayConfig
         ? await encryptData(JSON.stringify(input.v2rayConfig), userKey)
         : null;
-      
+
       // Store in database
       await db.insert(proxyConfigs).values({
         id: proxyId,
@@ -171,7 +175,7 @@ export const proxy = router({
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      
+
       return { id: proxyId };
     }),
 });
@@ -184,33 +188,30 @@ export const proxy = router({
 ```typescript
 export const account = router({
   assignProxy: protectedProcedure
-    .input(z.object({
-      accountId: z.string().uuid(),
-      proxyConfigId: z.string().uuid().optional(),
-    }))
+    .input(
+      z.object({
+        accountId: z.string().uuid(),
+        proxyConfigId: z.string().uuid().optional(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
       const { accountId, proxyConfigId } = input;
-      
+
       // Verify user owns account
       const account = await db
         .select()
         .from(accounts)
-        .where(
-          and(
-            eq(accounts.id, accountId),
-            eq(accounts.userId, user.id)
-          )
-        )
+        .where(and(eq(accounts.id, accountId), eq(accounts.userId, user.id)))
         .limit(1);
-      
+
       if (!account.length) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Account not found',
+          code: "NOT_FOUND",
+          message: "Account not found",
         });
       }
-      
+
       // Verify user owns proxy config (if provided)
       if (proxyConfigId) {
         const proxy = await db
@@ -223,15 +224,15 @@ export const account = router({
             )
           )
           .limit(1);
-        
+
         if (!proxy.length) {
           throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Proxy config not found',
+            code: "NOT_FOUND",
+            message: "Proxy config not found",
           });
         }
       }
-      
+
       // Update or insert assignment
       await db
         .insert(accountProxyAssignments)
@@ -244,7 +245,7 @@ export const account = router({
         .onDuplicateKeyUpdate({
           set: { proxyConfigId: proxyConfigId || null },
         });
-      
+
       return { success: true };
     }),
 });
@@ -272,9 +273,9 @@ interface ProxyConnection {
 class ProxyConnectionPool {
   private pools: Map<string, ProxyConnection[]> = new Map();
   private maxConnections: number = 10;
-  private idleTimeout: number = 60000;  // 1 minute
-  private connectionTimeout: number = 10000;  // 10 seconds
-  
+  private idleTimeout: number = 60000; // 1 minute
+  private connectionTimeout: number = 10000; // 10 seconds
+
   async acquire(proxyConfigId: string): Promise<ProxyConnection> {
     // Get pool for proxy config
     let pool = this.pools.get(proxyConfigId);
@@ -282,7 +283,7 @@ class ProxyConnectionPool {
       pool = [];
       this.pools.set(proxyConfigId, pool);
     }
-    
+
     // Return idle connection if available
     const idleConnection = pool.find(
       c => !c.isActive && Date.now() - c.lastUsedAt < this.idleTimeout
@@ -291,14 +292,14 @@ class ProxyConnectionPool {
       idleConnection.isActive = true;
       return idleConnection;
     }
-    
+
     // Create new connection if under limit
     if (pool.length < this.maxConnections) {
       const connection = await this.createConnection(proxyConfigId);
       pool.push(connection);
       return connection;
     }
-    
+
     // Wait for connection to become available
     return new Promise((resolve, reject) => {
       const checkInterval = setInterval(() => {
@@ -311,28 +312,33 @@ class ProxyConnectionPool {
           resolve(available);
         }
       }, 100);
-      
+
       // Timeout after 30 seconds
       setTimeout(() => {
         clearInterval(checkInterval);
-        reject(new Error('No available connections'));
+        reject(new Error("No available connections"));
       }, 30000);
     });
   }
-  
-  async release(proxyConfigId: string, connection: ProxyConnection): Promise<void> {
+
+  async release(
+    proxyConfigId: string,
+    connection: ProxyConnection
+  ): Promise<void> {
     connection.isActive = false;
     connection.lastUsedAt = new Date();
     connection.requestCount++;
   }
-  
-  private async createConnection(proxyConfigId: string): Promise<ProxyConnection> {
+
+  private async createConnection(
+    proxyConfigId: string
+  ): Promise<ProxyConnection> {
     // Get proxy config
     const proxyConfig = await getProxyConfig(proxyConfigId);
-    
+
     // Create socket based on proxy type
     const socket = await this.createSocket(proxyConfig);
-    
+
     return {
       id: generateUUID(),
       proxyConfigId,
@@ -343,7 +349,7 @@ class ProxyConnectionPool {
       requestCount: 0,
     };
   }
-  
+
   private async createSocket(config: ProxyConfig): Promise<net.Socket> {
     switch (config.type) {
       case ProxyType.HTTP:
@@ -360,37 +366,37 @@ class ProxyConnectionPool {
         throw new Error(`Unsupported proxy type: ${config.type}`);
     }
   }
-  
+
   private createHttpSocket(config: ProxyConfig): net.Socket {
     const socket = net.createConnection({
       host: config.host,
       port: config.port,
       timeout: this.connectionTimeout,
     });
-    
+
     return socket;
   }
-  
+
   private createSocks5Socket(config: ProxyConfig): net.Socket {
     const socket = net.createConnection({
       host: config.host,
       port: config.port,
       timeout: this.connectionTimeout,
     });
-    
+
     // Implement SOCKS5 handshake
-    socket.on('connect', () => {
+    socket.on("connect", () => {
       const handshake = Buffer.from([0x05, 0x02, 0x00, 0x02]);
       socket.write(handshake);
     });
-    
+
     return socket;
   }
-  
+
   private async createV2RaySocket(config: ProxyConfig): Promise<net.Socket> {
     // V2Ray socket creation handled by V2Ray core
     // This is a placeholder for integration
-    throw new Error('V2Ray socket creation not yet implemented');
+    throw new Error("V2Ray socket creation not yet implemented");
   }
 }
 
@@ -408,11 +414,11 @@ async function routeRequestThroughProxy(
 ): Promise<Response> {
   // Get connection from pool
   const connection = await connectionPool.acquire(proxyConfig.id);
-  
+
   try {
     // Route request based on proxy type
     const response = await routeByProxyType(request, proxyConfig, connection);
-    
+
     return response;
   } catch (error) {
     // Log error
@@ -421,7 +427,7 @@ async function routeRequestThroughProxy(
       error: error.message,
       timestamp: new Date(),
     });
-    
+
     throw error;
   } finally {
     // Release connection back to pool
@@ -456,60 +462,62 @@ async function routeHttpProxy(
   connection: ProxyConnection
 ): Promise<Response> {
   const url = new URL(request.url);
-  
+
   // Build proxy request
   const proxyRequest = `${request.method} ${url.pathname}${url.search} HTTP/1.1\r\n`;
   const headers = new Headers(request.headers);
-  headers.set('Host', url.hostname);
-  
+  headers.set("Host", url.hostname);
+
   // Add proxy authentication if needed
   if (proxyConfig.username && proxyConfig.password) {
     const credentials = btoa(`${proxyConfig.username}:${proxyConfig.password}`);
-    headers.set('Proxy-Authorization', `Basic ${credentials}`);
+    headers.set("Proxy-Authorization", `Basic ${credentials}`);
   }
-  
+
   // Send request through proxy
   connection.socket.write(proxyRequest);
   connection.socket.write(headers.toString());
-  connection.socket.write('\r\n');
-  
+  connection.socket.write("\r\n");
+
   if (request.body) {
     connection.socket.write(await request.arrayBuffer());
   }
-  
+
   // Read response
   return new Promise((resolve, reject) => {
-    let responseData = '';
-    
-    connection.socket.on('data', (chunk) => {
+    let responseData = "";
+
+    connection.socket.on("data", chunk => {
       responseData += chunk.toString();
     });
-    
-    connection.socket.on('end', () => {
+
+    connection.socket.on("end", () => {
       // Parse HTTP response
-      const [statusLine, ...headerLines] = responseData.split('\r\n');
-      const [, statusCode, statusText] = statusLine.split(' ');
-      
+      const [statusLine, ...headerLines] = responseData.split("\r\n");
+      const [, statusCode, statusText] = statusLine.split(" ");
+
       const headers = new Headers();
       for (const line of headerLines) {
-        if (line.includes(':')) {
-          const [key, value] = line.split(':', 2);
+        if (line.includes(":")) {
+          const [key, value] = line.split(":", 2);
           headers.set(key.trim(), value.trim());
         }
       }
-      
+
       // Extract body
-      const bodyStart = responseData.indexOf('\r\n\r\n') + 4;
+      const bodyStart = responseData.indexOf("\r\n\r\n") + 4;
       const body = responseData.substring(bodyStart);
-      
-      resolve(new Response(body, {
-        status: parseInt(statusCode),
-        statusText,
-        headers,
-      }));
+
+      resolve(
+        new Response(body, {
+          status: parseInt(statusCode),
+          statusText,
+          headers,
+        })
+      );
     });
-    
-    connection.socket.on('error', reject);
+
+    connection.socket.on("error", reject);
   });
 }
 ```
@@ -525,13 +533,15 @@ async function routeHttpProxy(
 ```typescript
 export const proxy = router({
   test: protectedProcedure
-    .input(z.object({
-      proxyConfigId: z.string().uuid(),
-    }))
+    .input(
+      z.object({
+        proxyConfigId: z.string().uuid(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       const { user } = ctx;
       const { proxyConfigId } = input;
-      
+
       // Get proxy config
       const proxyConfig = await db
         .select()
@@ -543,29 +553,29 @@ export const proxy = router({
           )
         )
         .limit(1);
-      
+
       if (!proxyConfig.length) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Proxy config not found',
+          code: "NOT_FOUND",
+          message: "Proxy config not found",
         });
       }
-      
+
       const startTime = Date.now();
-      
+
       try {
         // Test connectivity
-        const response = await fetch('https://httpbin.org/ip', {
-          method: 'GET',
+        const response = await fetch("https://httpbin.org/ip", {
+          method: "GET",
           timeout: 10000,
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
-        
+
         const latency = Date.now() - startTime;
-        
+
         // Update test result
         await db
           .update(proxyConfigs)
@@ -576,7 +586,7 @@ export const proxy = router({
             testResultError: null,
           })
           .where(eq(proxyConfigs.id, proxyConfigId));
-        
+
         return {
           success: true,
           latency,
@@ -584,7 +594,7 @@ export const proxy = router({
         };
       } catch (error) {
         const latency = Date.now() - startTime;
-        
+
         // Update test result
         await db
           .update(proxyConfigs)
@@ -595,9 +605,9 @@ export const proxy = router({
             testResultError: error.message,
           })
           .where(eq(proxyConfigs.id, proxyConfigId));
-        
+
         throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
+          code: "INTERNAL_SERVER_ERROR",
           message: `Proxy test failed: ${error.message}`,
         });
       }
@@ -623,14 +633,14 @@ interface ProxyMetrics {
 
 class ProxyMetricsCollector {
   private metrics: Map<string, ProxyMetrics> = new Map();
-  
+
   recordRequest(
     proxyConfigId: string,
     latency: number,
     success: boolean
   ): void {
     let metric = this.metrics.get(proxyConfigId);
-    
+
     if (!metric) {
       metric = {
         proxyConfigId,
@@ -644,22 +654,23 @@ class ProxyMetricsCollector {
       };
       this.metrics.set(proxyConfigId, metric);
     }
-    
+
     metric.requestCount++;
     if (success) {
       metric.successCount++;
     } else {
       metric.failureCount++;
     }
-    
+
     // Update latency stats
-    const totalLatency = metric.averageLatency * (metric.requestCount - 1) + latency;
+    const totalLatency =
+      metric.averageLatency * (metric.requestCount - 1) + latency;
     metric.averageLatency = totalLatency / metric.requestCount;
     metric.maxLatency = Math.max(metric.maxLatency, latency);
     metric.minLatency = Math.min(metric.minLatency, latency);
     metric.lastUpdated = new Date();
   }
-  
+
   getMetrics(proxyConfigId: string): ProxyMetrics | undefined {
     return this.metrics.get(proxyConfigId);
   }
@@ -678,24 +689,24 @@ const metricsCollector = new ProxyMetricsCollector();
 
 ```typescript
 interface V2RayConfig {
-  protocol: 'vmess' | 'vless' | 'trojan' | 'shadowsocks';
+  protocol: "vmess" | "vless" | "trojan" | "shadowsocks";
   server: string;
   port: number;
-  
+
   // VMess specific
   uuid?: string;
   alterId?: number;
-  security?: 'auto' | 'none' | 'aes-128-gcm' | 'chacha20-poly1305';
-  
+  security?: "auto" | "none" | "aes-128-gcm" | "chacha20-poly1305";
+
   // VLESS specific
-  flow?: 'xtls-rprx-vision' | 'xtls-rprx-vision-udp443';
-  
+  flow?: "xtls-rprx-vision" | "xtls-rprx-vision-udp443";
+
   // Trojan specific
   password?: string;
-  
+
   // Shadowsocks specific
   cipher?: string;
-  
+
   // Common
   tls?: boolean;
   sni?: string;
@@ -709,49 +720,55 @@ function toV2RayJson(config: V2RayConfig): object {
   const outbound: any = {
     protocol: config.protocol,
     settings: {
-      servers: [{
-        address: config.server,
-        port: config.port,
-      }],
+      servers: [
+        {
+          address: config.server,
+          port: config.port,
+        },
+      ],
     },
   };
-  
+
   // Add protocol-specific settings
-  if (config.protocol === 'vmess') {
-    outbound.settings.servers[0].users = [{
-      id: config.uuid,
-      alterId: config.alterId || 0,
-      security: config.security || 'auto',
-    }];
-  } else if (config.protocol === 'vless') {
-    outbound.settings.servers[0].users = [{
-      id: config.uuid,
-      flow: config.flow,
-    }];
-  } else if (config.protocol === 'trojan') {
+  if (config.protocol === "vmess") {
+    outbound.settings.servers[0].users = [
+      {
+        id: config.uuid,
+        alterId: config.alterId || 0,
+        security: config.security || "auto",
+      },
+    ];
+  } else if (config.protocol === "vless") {
+    outbound.settings.servers[0].users = [
+      {
+        id: config.uuid,
+        flow: config.flow,
+      },
+    ];
+  } else if (config.protocol === "trojan") {
     outbound.settings.servers[0].password = config.password;
-  } else if (config.protocol === 'shadowsocks') {
+  } else if (config.protocol === "shadowsocks") {
     outbound.settings.servers[0].cipher = config.cipher;
     outbound.settings.servers[0].password = config.password;
   }
-  
+
   // Add TLS settings
   if (config.tls) {
     outbound.streamSettings = {
-      network: 'tcp',
-      security: 'tls',
+      network: "tcp",
+      security: "tls",
       tlsSettings: {
         serverName: config.sni,
         allowInsecure: config.allowInsecure,
         fingerprint: config.fingerprint,
       },
     };
-    
+
     if (config.alpn) {
       outbound.streamSettings.tlsSettings.alpn = config.alpn;
     }
   }
-  
+
   return outbound;
 }
 ```
@@ -761,44 +778,46 @@ function toV2RayJson(config: V2RayConfig): object {
 **V2Ray Core Wrapper:**
 
 ```typescript
-import { spawn } from 'child_process';
+import { spawn } from "child_process";
 
 class V2RayCore {
   private process: ChildProcess | null = null;
   private configPath: string;
-  
+
   constructor(configPath: string) {
     this.configPath = configPath;
   }
-  
+
   async start(config: V2RayConfig): Promise<void> {
     // Write config to file
     const v2rayConfig = {
-      log: { loglevel: 'warning' },
-      inbounds: [{
-        port: 10808,
-        protocol: 'socks',
-        settings: { auth: 'noauth' },
-      }],
+      log: { loglevel: "warning" },
+      inbounds: [
+        {
+          port: 10808,
+          protocol: "socks",
+          settings: { auth: "noauth" },
+        },
+      ],
       outbounds: [toV2RayJson(config)],
     };
-    
+
     await writeFile(this.configPath, JSON.stringify(v2rayConfig, null, 2));
-    
+
     // Start V2Ray process
-    this.process = spawn('v2ray', ['-c', this.configPath]);
-    
+    this.process = spawn("v2ray", ["-c", this.configPath]);
+
     // Wait for startup
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
-  
+
   async stop(): Promise<void> {
     if (this.process) {
       this.process.kill();
       this.process = null;
     }
   }
-  
+
   isRunning(): boolean {
     return this.process !== null && !this.process.killed;
   }
@@ -815,29 +834,29 @@ class V2RayCore {
 
 ```typescript
 enum ProxyErrorType {
-  CONNECTION_REFUSED = 'CONNECTION_REFUSED',
-  CONNECTION_TIMEOUT = 'CONNECTION_TIMEOUT',
-  AUTHENTICATION_FAILED = 'AUTHENTICATION_FAILED',
-  INVALID_PROTOCOL = 'INVALID_PROTOCOL',
-  NETWORK_UNREACHABLE = 'NETWORK_UNREACHABLE',
-  UNKNOWN = 'UNKNOWN',
+  CONNECTION_REFUSED = "CONNECTION_REFUSED",
+  CONNECTION_TIMEOUT = "CONNECTION_TIMEOUT",
+  AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED",
+  INVALID_PROTOCOL = "INVALID_PROTOCOL",
+  NETWORK_UNREACHABLE = "NETWORK_UNREACHABLE",
+  UNKNOWN = "UNKNOWN",
 }
 
 function classifyProxyError(error: Error): ProxyErrorType {
   const message = error.message.toLowerCase();
-  
-  if (message.includes('connection refused')) {
+
+  if (message.includes("connection refused")) {
     return ProxyErrorType.CONNECTION_REFUSED;
-  } else if (message.includes('timeout')) {
+  } else if (message.includes("timeout")) {
     return ProxyErrorType.CONNECTION_TIMEOUT;
-  } else if (message.includes('authentication')) {
+  } else if (message.includes("authentication")) {
     return ProxyErrorType.AUTHENTICATION_FAILED;
-  } else if (message.includes('protocol')) {
+  } else if (message.includes("protocol")) {
     return ProxyErrorType.INVALID_PROTOCOL;
-  } else if (message.includes('unreachable')) {
+  } else if (message.includes("unreachable")) {
     return ProxyErrorType.NETWORK_UNREACHABLE;
   }
-  
+
   return ProxyErrorType.UNKNOWN;
 }
 ```
@@ -862,10 +881,12 @@ async function routeRequestWithFallback(
   } catch (error) {
     // If proxy fails, fall back to direct connection
     if (proxyConfig) {
-      console.warn(`Proxy failed: ${error.message}, falling back to direct connection`);
+      console.warn(
+        `Proxy failed: ${error.message}, falling back to direct connection`
+      );
       return await fetch(request);
     }
-    
+
     throw error;
   }
 }
@@ -889,8 +910,8 @@ const decryptedUsername = await decryptData(encryptedUsername, userKey);
 const decryptedPassword = await decryptData(encryptedPassword, userKey);
 
 // Never log credentials
-console.log(`Proxy: ${host}:${port}`);  // OK
-console.log(`Proxy: ${host}:${port} ${username}:${password}`);  // NEVER
+console.log(`Proxy: ${host}:${port}`); // OK
+console.log(`Proxy: ${host}:${port} ${username}:${password}`); // NEVER
 ```
 
 ### 7.2 Proxy Validation
@@ -903,20 +924,20 @@ function validateProxyConfig(config: ProxyConfig): boolean {
   if (!isValidHostname(config.host) && !isValidIpAddress(config.host)) {
     return false;
   }
-  
+
   // Validate port
   if (config.port < 1 || config.port > 65535) {
     return false;
   }
-  
+
   // Validate protocol-specific settings
   if (config.type === ProxyType.SOCKS5) {
     // SOCKS5 requires port to be open
     if (config.port < 1024) {
-      return false;  // Privileged port
+      return false; // Privileged port
     }
   }
-  
+
   return true;
 }
 ```

@@ -16,14 +16,14 @@ This directory contains production-ready GitHub Actions workflow templates for c
 
 ### 1.1 Available Workflows
 
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `ci.yml` | Push, PR | Run tests and linting |
-| `build.yml` | Push to main | Build web app and Docker image |
-| `deploy-staging.yml` | Manual trigger | Deploy to staging environment |
-| `deploy-production.yml` | Release tag | Deploy to production |
-| `build-apk.yml` | Release tag | Build and sign APK |
-| `publish-apk.yml` | Manual trigger | Publish APK to Play Store |
+| Workflow                | Trigger        | Purpose                        |
+| ----------------------- | -------------- | ------------------------------ |
+| `ci.yml`                | Push, PR       | Run tests and linting          |
+| `build.yml`             | Push to main   | Build web app and Docker image |
+| `deploy-staging.yml`    | Manual trigger | Deploy to staging environment  |
+| `deploy-production.yml` | Release tag    | Deploy to production           |
+| `build-apk.yml`         | Release tag    | Build and sign APK             |
+| `publish-apk.yml`       | Manual trigger | Publish APK to Play Store      |
 
 ### 1.2 Workflow Directory
 
@@ -62,11 +62,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         node-version: [22.x]
-    
+
     services:
       mysql:
         image: mysql:8.0
@@ -80,40 +80,40 @@ jobs:
           --health-retries=3
         ports:
           - 3306:3306
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-      
+          cache: "pnpm"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Type checking
         run: pnpm check
-      
+
       - name: Linting
         run: pnpm lint
-      
+
       - name: Run tests
         run: pnpm test
         env:
           DATABASE_URL: mysql://root:root@localhost:3306/incog_test
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage/coverage-final.json
           flags: unittests
           name: codecov-umbrella
-      
+
       - name: Build
         run: pnpm build
-      
+
       - name: Security audit
         run: npm audit --audit-level=moderate
 ```
@@ -126,6 +126,7 @@ jobs:
 ### 2.4 Jobs
 
 **Test Job:**
+
 - Checks out code
 - Sets up Node.js
 - Installs dependencies
@@ -158,38 +159,38 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-          cache: 'pnpm'
-      
+          cache: "pnpm"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Build
         run: pnpm build
-      
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build
           path: dist/
           retention-days: 7
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -209,6 +210,7 @@ jobs:
 ### 3.4 Jobs
 
 **Build Job:**
+
 - Checks out code
 - Sets up Node.js
 - Installs dependencies
@@ -231,23 +233,23 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to deploy'
+        description: "Version to deploy"
         required: true
-        default: 'latest'
+        default: "latest"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Deploy to staging
         run: |
           curl -X POST ${{ secrets.STAGING_DEPLOY_WEBHOOK }} \
             -H 'Content-Type: application/json' \
             -d '{"version":"${{ github.event.inputs.version }}"}'
-      
+
       - name: Notify Slack
         uses: slackapi/slack-github-action@v1
         with:
@@ -277,25 +279,25 @@ name: Deploy to Production
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Get version
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      
+
       - name: Deploy to production
         run: |
           curl -X POST ${{ secrets.PRODUCTION_DEPLOY_WEBHOOK }} \
             -H 'Content-Type: application/json' \
             -d '{"version":"${{ steps.version.outputs.VERSION }}"}'
-      
+
       - name: Create release
         uses: actions/create-release@v1
         env:
@@ -306,7 +308,7 @@ jobs:
           body: Release notes for ${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false
-      
+
       - name: Notify Slack
         uses: slackapi/slack-github-action@v1
         with:
@@ -344,44 +346,44 @@ name: Build APK
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-          cache: 'pnpm'
-      
+          cache: "pnpm"
+
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'temurin'
-      
+          java-version: "17"
+          distribution: "temurin"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Build web app
         run: pnpm build
-      
+
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
-      
+
       - name: Get version
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      
+
       - name: Decode keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 -d > release.keystore
-      
+
       - name: Build APK
         run: |
           bubblewrap build \
@@ -389,14 +391,14 @@ jobs:
             --keystore-alias=release_key \
             --keystore-password=${{ secrets.KEYSTORE_PASSWORD }} \
             --key-password=${{ secrets.KEY_PASSWORD }}
-      
+
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
           name: apk
           path: app-release.apk
           retention-days: 30
-      
+
       - name: Create release
         uses: actions/create-release@v1
         env:
@@ -406,7 +408,7 @@ jobs:
           release_name: Release ${{ steps.version.outputs.VERSION }}
           draft: false
           prerelease: false
-      
+
       - name: Upload APK to release
         uses: actions/upload-release-asset@v1
         env:
@@ -425,6 +427,7 @@ jobs:
 ### 5.4 Jobs
 
 **Build APK Job:**
+
 - Checks out code
 - Sets up Node.js and Java
 - Installs dependencies
@@ -455,12 +458,12 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish'
+        description: "Version to publish"
         required: true
       track:
-        description: 'Release track'
+        description: "Release track"
         required: true
-        default: 'internal'
+        default: "internal"
         type: choice
         options:
           - internal
@@ -471,34 +474,34 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Download APK
         uses: actions/download-artifact@v3
         with:
           name: apk
-      
+
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'temurin'
-      
+          java-version: "17"
+          distribution: "temurin"
+
       - name: Decode Play Store credentials
         run: |
           echo "${{ secrets.PLAY_STORE_CREDENTIALS }}" | base64 -d > play-store-credentials.json
-      
+
       - name: Publish to Play Store
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJson: play-store-credentials.json
           packageName: com.incog.browser
-          releaseFiles: 'incog-${{ github.event.inputs.version }}.apk'
+          releaseFiles: "incog-${{ github.event.inputs.version }}.apk"
           track: ${{ github.event.inputs.track }}
           status: completed
-      
+
       - name: Notify Slack
         uses: slackapi/slack-github-action@v1
         with:
@@ -526,17 +529,17 @@ jobs:
 
 All workflows require the following secrets to be configured in GitHub:
 
-| Secret | Description |
-|--------|-------------|
-| `DOCKER_USERNAME` | Docker Hub username |
-| `DOCKER_PASSWORD` | Docker Hub password |
-| `STAGING_DEPLOY_WEBHOOK` | Staging deployment webhook URL |
-| `PRODUCTION_DEPLOY_WEBHOOK` | Production deployment webhook URL |
-| `SLACK_WEBHOOK` | Slack webhook for notifications |
-| `ANDROID_KEYSTORE` | Base64-encoded Android keystore |
-| `KEYSTORE_PASSWORD` | Keystore password |
-| `KEY_PASSWORD` | Key password |
-| `PLAY_STORE_CREDENTIALS` | Base64-encoded Play Store credentials |
+| Secret                      | Description                           |
+| --------------------------- | ------------------------------------- |
+| `DOCKER_USERNAME`           | Docker Hub username                   |
+| `DOCKER_PASSWORD`           | Docker Hub password                   |
+| `STAGING_DEPLOY_WEBHOOK`    | Staging deployment webhook URL        |
+| `PRODUCTION_DEPLOY_WEBHOOK` | Production deployment webhook URL     |
+| `SLACK_WEBHOOK`             | Slack webhook for notifications       |
+| `ANDROID_KEYSTORE`          | Base64-encoded Android keystore       |
+| `KEYSTORE_PASSWORD`         | Keystore password                     |
+| `KEY_PASSWORD`              | Key password                          |
+| `PLAY_STORE_CREDENTIALS`    | Base64-encoded Play Store credentials |
 
 ### 7.2 Setting Secrets
 
