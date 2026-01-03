@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { useAuth } from "./useAuth";
 import { trpc } from "@/lib/trpc";
@@ -111,5 +111,83 @@ describe("useAuth", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
     expect(result.current.loading).toBe(true);
+  });
+
+  it("should handle logout successfully", async () => {
+    const mutateAsync = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(trpc.auth.me.useQuery).mockReturnValue({
+      data: regularUser,
+      isLoading: false,
+      error: null,
+    } as any);
+    vi.mocked(trpc.auth.logout.useMutation).mockReturnValue({
+      isPending: false,
+      error: null,
+      mutateAsync,
+    } as any);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    expect(mutateAsync).toHaveBeenCalled();
+  });
+
+  it("should handle UNAUTHORIZED error on logout", async () => {
+    const error = {
+      name: 'TRPCClientError',
+      data: {
+        code: 'UNAUTHORIZED',
+      },
+    };
+    const mutateAsync = vi.fn().mockRejectedValue(error);
+    vi.mocked(trpc.auth.me.useQuery).mockReturnValue({
+      data: regularUser,
+      isLoading: false,
+      error: null,
+    } as any);
+    vi.mocked(trpc.auth.logout.useMutation).mockReturnValue({
+      isPending: false,
+      error: null,
+      mutateAsync,
+    } as any);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    expect(mutateAsync).toHaveBeenCalled();
+  });
+
+  it("should redirect on unauthenticated", () => {
+    const { location } = window;
+    // This is how you mock `window.location`
+    vi.stubGlobal("location", {
+      ...location,
+      href: "",
+      pathname: "/some-path",
+    });
+
+    vi.mocked(trpc.auth.me.useQuery).mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: null,
+    } as any);
+    vi.mocked(trpc.auth.logout.useMutation).mockReturnValue({
+      isPending: false,
+      error: null,
+      mutateAsync: vi.fn(),
+    } as any);
+
+    renderHook(() => useAuth({ redirectOnUnauthenticated: true }), {
+      wrapper,
+    });
+
+    expect(window.location.href).toBe("http://dummy-login-url");
+    vi.unstubAllGlobals();
   });
 });
