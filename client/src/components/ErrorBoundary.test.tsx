@@ -31,4 +31,19 @@ describe("ErrorBoundary", () => {
       screen.getByText("An unexpected error occurred.")
     ).toBeInTheDocument();
   });
+
+  it("reloads the page when the reload button is clicked", () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const reload = vi.fn();
+    vi.stubGlobal("location", { reload });
+
+    render(
+      <ErrorBoundary>
+        <ThrowError />
+      </ErrorBoundary>
+    );
+
+    screen.getAllByText("Reload Page")[0].click();
+    expect(reload).toHaveBeenCalled();
+  });
 });

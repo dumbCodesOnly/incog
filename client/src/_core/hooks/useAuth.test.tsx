@@ -113,26 +113,41 @@ describe("useAuth", () => {
     expect(result.current.loading).toBe(true);
   });
 
-  it("should handle logout successfully", async () => {
-    const mutateAsync = vi.fn().mockResolvedValue(undefined);
+  it("should handle logout successfully and call onSuccess", async () => {
+    const setDataMock = vi.fn();
+    const invalidateMock = vi.fn();
+    vi.mocked(trpc.useUtils).mockReturnValue({
+      auth: { me: { setData: setDataMock, invalidate: invalidateMock } },
+    } as any);
+
+    let onSuccess: (() => void) | undefined;
+    const mutateAsync = vi.fn().mockImplementation(() => {
+      if (onSuccess) onSuccess();
+      return Promise.resolve();
+    });
+
+    vi.mocked(trpc.auth.logout.useMutation).mockImplementation((options: any) => {
+      onSuccess = options?.onSuccess;
+      return {
+        isPending: false,
+        error: null,
+        mutateAsync,
+      };
+    });
     vi.mocked(trpc.auth.me.useQuery).mockReturnValue({
       data: regularUser,
       isLoading: false,
       error: null,
     } as any);
-    vi.mocked(trpc.auth.logout.useMutation).mockReturnValue({
-      isPending: false,
-      error: null,
-      mutateAsync,
-    } as any);
 
     const { result } = renderHook(() => useAuth(), { wrapper });
 
-    await act(async () => {
-      await result.current.logout();
-    });
+    await act(async () => await result.current.logout());
 
     expect(mutateAsync).toHaveBeenCalled();
+    // Called once in onSuccess and once in finally block
+    expect(setDataMock).toHaveBeenCalledTimes(2);
+    expect(invalidateMock).toHaveBeenCalledTimes(1);
   });
 
   it("should handle UNAUTHORIZED error on logout", async () => {
@@ -163,6 +178,39 @@ describe("useAuth", () => {
     expect(mutateAsync).toHaveBeenCalled();
   });
 
+  it("should re-throw non-UNAUTHORIZED errors on logout", async () => {
+    const error = new Error("A generic error");
+    const mutateAsync = vi.fn().mockRejectedValue(error);
+    const setDataMock = vi.fn();
+    const invalidateMock = vi.fn();
+    vi.mocked(trpc.useUtils).mockReturnValue({
+      auth: {
+        me: {
+          setData: setDataMock,
+          invalidate: invalidateMock,
+        },
+      },
+    } as any);
+    vi.mocked(trpc.auth.me.useQuery).mockReturnValue({
+      data: regularUser,
+      isLoading: false,
+      error: null,
+    } as any);
+    vi.mocked(trpc.auth.logout.useMutation).mockReturnValue({
+      isPending: false,
+      error: null,
+      mutateAsync,
+    } as any);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await expect(act(() => result.current.logout())).rejects.toThrow("A generic error");
+
+    expect(mutateAsync).toHaveBeenCalled();
+    expect(setDataMock).toHaveBeenCalledWith(undefined, null);
+    expect(invalidateMock).toHaveBeenCalled();
+  });
+
   it("should redirect on unauthenticated", () => {
     const { location } = window;
     // This is how you mock `window.location`
@@ -188,6 +236,34 @@ describe("useAuth", () => {
     });
 
     expect(window.location.href).toBe("http://dummy-login-url");
+    vi.unstubAllGlobals();
+  });
+
+  it("should not redirect if on the redirect path", () => {
+    const { location } = window;
+    vi.stubGlobal("location", {
+      ...location,
+      href: "",
+      pathname: "/login",
+    });
+
+    vi.mocked(trpc.auth.me.useQuery).mockReturnValue({
+      data: null,
+      isLoading: false,
+      error: null,
+    } as any);
+    vi.mocked(trpc.auth.logout.useMutation).mockReturnValue({
+      isPending: false,
+      error: null,
+      mutateAsync: vi.fn(),
+    } as any);
+
+    renderHook(
+      () => useAuth({ redirectOnUnauthenticated: true, redirectPath: "/login" }),
+      { wrapper }
+    );
+
+    expect(window.location.href).toBe("");
     vi.unstubAllGlobals();
   });
 });
